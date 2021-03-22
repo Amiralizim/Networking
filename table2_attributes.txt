@@ -1,0 +1,53 @@
+Dataset 2 Attributes:
+
+- flow_key
+- src_ip_numeric
+- src_ip			x
+- src_port		x
+- dst_ip			x
+- dst_port		x
+- proto			x
+- pktTotalCount
+- octetTotalCount
+- min_ps			x
+- max_ps			x
+- avg_ps			x
+- std_dev_ps		x
+- flowStart		x
+- flowEnd
+- flowDuration		x
+- min_piat		x
+- max_piat		x
+- avg_piat		x
+- std_dev_piat		x
+- f_pktTotalCount	x
+- f_octetTotalCount	x
+- f_min_ps		x
+- f_max_ps		x
+- f_avg_ps		x
+- f_std_dev_ps		x
+- f_flowStart
+- f_flowEnd
+- f_flowDuration
+- f_min_piat		x
+- f_max_piat		x
+- f_avg_piat		x
+- f_std_dev_piat		x
+- b_pktTotalCount	x
+- b_octetTotalCount	x
+- b_min_ps		x
+- b_max_ps		x
+- b_avg_ps		x
+- b_std_dev_ps		x
+- b_flowStart
+- b_flowEnd
+- b_flowDuration
+- b_min_piat		x
+- b_max_piat		x
+- b_avg_piat		x
+- b_std_dev_piat		x
+- flowEndReason
+- category
+- application_protocol
+- web_service
+
