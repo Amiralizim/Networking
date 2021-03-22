@@ -5,11 +5,9 @@ ER relationship diagram: draw.io
 https://www.kaggle.com/jsrojas/ip-network-traffic-flows-labeled-with-87-apps
 https://www.kaggle.com/jsrojas/labeled-network-traffic-flows-114-applications
 
-# Notes:
+# Notes For Dataset 1 (87 attributes):
 
 ## Flows Table
-
-This is in reference to Flows table located in the first dataset (87-attributes)
 
 __Purpose:__
 This table should allow for us to uniquely indentify flows , Hence everytime we need to use a unique flow we will start by querying this table and get whatever information is required
@@ -73,3 +71,16 @@ __Purpose:__ Find what protocol is being used
 
 __Notes:__ N/A
 
+# Notes For Dataset 2 :
+
+Seems like these columns are just a subset of the first dataset with different names
+
+## Flow_2
+ __Purpose:__ Have a primary key for the second dataset
+
+ __Notes:__
+ * Use the flow_key along with the flow_duration and flow start as the primary key. Pretty much same logic as the first dataset
+ * flow_end is redundant as its just flow_start + duration 
+ * Discarding src_ip_numeric for now as I dont see a use for it
+ * dataset 2 does not have InterArrivalTime data, probably best to get rid from first dataset too, also does not have per second data
+ 
