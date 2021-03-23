@@ -9,80 +9,80 @@ create table dataset1 (
 	  Source.Port varchar(5), 
 	  Destination.IP varchar(15), 
 	  Destination.Port varchar(5), 
-	  Protocol varchar(1), 
+	  Protocol varchar(1),                             --can 17 fit in varchar(1)?
 	  Timestamp SmallDateTime, -- YYYY-MM-DD hh:mm:ss
-	  Flow.Duration decimal(100000000), -- maximum 120000000
-	  Total.Fwd.Packets decimal(1000000), -- maximum 453k 
-	  Total.Backward.Packets decimal(1000000), -- maximum 542k
-	  Total.Length.of.Fwd.Packets decimal(1000000000), -- maximum 678023588
-	  Total.Length.of.Bwd.Packets decimal(1000000000), -- maximum 1,345,795,830
-	  Fwd.Packet.Length.Max, 
-	  Fwd.Packet.Length.Min, 
-	  Fwd.Packet.Length.Mean, 
-	  Fwd.Packet.Length.Std, 
-	  Bwd.Packet.Length.Max, 
-	  Bwd.Packet.Length.Min, 
-	  Bwd.Packet.Length.Mean, 
-	  Bwd.Packet.Length.Std, 
-	  Flow.Bytes.s, 
-	  Flow.Packets.s, 
-	  Flow.IAT.Mean, 
-	  Flow.IAT.Std, 
-	  Flow.IAT.Max, 
-	  Flow.IAT.Min, 
-	  Fwd.IAT.Total, 
-	  Fwd.IAT.Mean, 
-	  Fwd.IAT.Std, 
-	  Fwd.IAT.Max, 
-	  Fwd.IAT.Min, 
-	  Bwd.IAT.Total, 
-	  Bwd.IAT.Mean, 
-	  Bwd.IAT.Std, 
-	  Bwd.IAT.Max, 
-	  Bwd.IAT.Min, 
-	  Fwd.PSH.Flags, 
-	  Bwd.PSH.Flags, 
-	  Fwd.URG.Flags, 
-	  Bwd.URG.Flags, 
-	  Fwd.Header.Length, 
-	  Bwd.Header.Length, 
-	  Fwd.Packets.s, 
-	  Bwd.Packets.s, 
-	  Min.Packet.Length, 
-	  Max.Packet.Length, 
-	  Packet.Length.Mean, 
-	  Packet.Length.Std, 
-	  Packet.Length.Variance, 
-	  FIN.Flag.Count, 
-	  SYN.Flag.Count, 
-	  RST.Flag.Count, 
-	  PSH.Flag.Count, 
-	  ACK.Flag.Count, 
-	  URG.Flag.Count, 
-	  CWE.Flag.Count, 
-	  ECE.Flag.Count, 
-	  Down.Up.Ratio, 
-	  Average.Packet.Size, 
-	  Avg.Fwd.Segment.Size, 
-	  Avg.Bwd.Segment.Size, 
-	  Fwd.Header.Length.1, 
-	  Fwd.Avg.Bytes.Bulk, 
-	  Fwd.Avg.Packets.Bulk, 
-	  Fwd.Avg.Bulk.Rate, 
-	  Bwd.Avg.Bytes.Bulk, 
-	  Bwd.Avg.Packets.Bulk, 
-	  Bwd.Avg.Bulk.Rate, 
-	  Subflow.Fwd.Packets, 
-	  Subflow.Fwd.Bytes, 
-	  Subflow.Bwd.Packets, 
-	  Subflow.Bwd.Bytes, 
-	  Init_Win_bytes_forward, 
-	  Init_Win_bytes_backward, 
-	  act_data_pkt_fwd, 
-	  min_seg_size_forward,
-	  Label, 
-	  L7Protocol, 
-	  ProtocolName
+	  Flow.Duration decimal(9), -- maximum 120000000
+	  Total.Fwd.Packets decimal(6), -- maximum 453k 
+	  Total.Backward.Packets decimal(6), -- maximum 542k
+	  Total.Length.of.Fwd.Packets decimal(9), -- maximum 678023588
+	  Total.Length.of.Bwd.Packets decimal(10), -- maximum 1,345,795,830
+	  Fwd.Packet.Length.Max decimal(5), -- 32.8k
+	  Fwd.Packet.Length.Min decimal(5), -- 16.1k
+	  Fwd.Packet.Length.Mean decimal(5), -- 16.1k 
+	  Fwd.Packet.Length.Std decimal(4), -- 6.23k
+	  Bwd.Packet.Length.Max decimal(5), -- 37.6k
+	  Bwd.Packet.Length.Min decimal(5), -- 13k
+	  Bwd.Packet.Length.Mean decimal(5), -- 13k
+	  Bwd.Packet.Length.Std decimal(4), -- 8.43k
+	  Flow.Bytes.s decimal(11), -- 14.4b
+	  Flow.Packets.s decimal(7), -- 6m
+	  Flow.IAT.Mean decimal(9), -- 120m
+	  Flow.IAT.Std decimal(8), -- 84.9m
+	  Flow.IAT.Max decimal(9), -- 120m
+	  Flow.IAT.Min decimal(9), -- 120m
+	  Fwd.IAT.Total decimal(9), -- 120m
+	  Fwd.IAT.Mean decimal(9), -- 120m
+	  Fwd.IAT.Std decimal(8), -- 84.9m
+	  Fwd.IAT.Max decimal(9), --120m
+	  Fwd.IAT.Min decimal(9), -- 120m
+	  Bwd.IAT.Total decimal(9), -- 120m
+	  Bwd.IAT.Mean decimal(9), -- 120m
+	  Bwd.IAT.Std decimal(8), -- 84.9m
+	  Bwd.IAT.Max decimal(9), -- 120m
+	  Bwd.IAT.Min decimal(9), -- 120m
+	  Fwd.PSH.Flags decimal(1), -- 1
+	  Bwd.PSH.Flags decimal(1), -- 0
+	  Fwd.URG.Flags decimal(1), -- 0
+	  Bwd.URG.Flags decimal(1), -- 0
+	  Fwd.Header.Length decimal(8), -- 15.4m
+	  Bwd.Header.Length decimal(8), -- 12.8m
+	  Fwd.Packets.s decimal(7), -- 6m
+	  Bwd.Packets.s decimal(7), -- 5m
+	  Min.Packet.Length decimal(4), -- 7063
+	  Max.Packet.Length decimal(5), -- 37.6k
+	  Packet.Length.Mean decimal(5), -- 10.7k
+	  Packet.Length.Std decimal(4), -- 9.27k
+	  Packet.Length.Variance decimal(8), -- 85.9m
+	  FIN.Flag.Count decimal(1), -- 1
+	  SYN.Flag.Count decimal(1), -- 1
+	  RST.Flag.Count decimal(1), -- 1
+	  PSH.Flag.Count decimal(1), -- 1
+	  ACK.Flag.Count decimal(1), -- 1
+	  URG.Flag.Count decimal(1), -- 1
+	  CWE.Flag.Count decimal(1), -- 1
+	  ECE.Flag.Count decimal(1), -- 1
+	  Down.Up.Ratio decimal(3), -- 293
+	  Average.Packet.Size decimal(5), -- 16.1k
+	  Avg.Fwd.Segment.Size decimal(5), -- 16.1k
+	  Avg.Bwd.Segment.Size decimal(5), -- 13k
+	  Fwd.Header.Length.1 decimal(8), -- 15.4m
+	  Fwd.Avg.Bytes.Bulk decimal(1), -- 0
+	  Fwd.Avg.Packets.Bulk decimal(1), -- 0
+	  Fwd.Avg.Bulk.Rate decimal(1), -- 0
+	  Bwd.Avg.Bytes.Bulk decimal(1), -- 0
+	  Bwd.Avg.Packets.Bulk decimal(1), -- 0
+	  Bwd.Avg.Bulk.Rate decimal(1), -- 0
+	  Subflow.Fwd.Packets decimal(6), -- 453k
+	  Subflow.Fwd.Bytes decimal(9), -- 678m
+	  Subflow.Bwd.Packets decimal(6), -- 542k
+	  Subflow.Bwd.Bytes decimal(10), -- 1.35b
+	  Init_Win_bytes_forward decimal(5), -- 65.5k
+	  Init_Win_bytes_backward decimal(5), -- 65.5k
+	  act_data_pkt_fwd decimal(6), -- 329k
+	  min_seg_size_forward decimal(3),-- 523
+	  Label varchar(6), -- BENIGH OR MALIGN
+	  L7Protocol decimal(3), -- 222
+	  ProtocolName varchar(15) -- WINDOWS_UPDATE
 )
 load data infile '/var/lib/mysql-files/21-Network-Traffic/ip-network-traffic-flows-labeled-with-87-apps.csv' ignore into table dataset1
 		fields terminated by ','
