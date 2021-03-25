@@ -152,15 +152,44 @@ load data infile '/var/lib/mysql-files/21-Network-Traffic/Unicauca-dataset-April
 
 
 -- Links Table -------------------------------------------------------------------
--- select '----------------------------------------------------------------' as '';
--- select 'Create Links' as '';
+select '----------------------------------------------------------------' as '';
+select 'Create Links' as '';
 
--- create table Links
+create table Links
 
--- create table Links (srcIP varchar(15), -- max: 255.255.255.255 -> 12+3
--- 				    srcPort varchar(5),
--- 					dstIP varchar(15),
--- 					dstPort varchar(15),
--- -- Constraints
+create table Links (srcIP varchar(15),
+ 				    srcPort varchar(5),
+ 					dstIP varchar(15),
+ 					dstPort varchar(15),
+--- Constraints
 -- 					primary key (flowID)
--- );
+);
+
+-- Links Flows -------------------------------------------------------------------
+select '----------------------------------------------------------------' as '';
+select 'Create Flows' as '';
+
+create table Flows (flowID char(38),
+	    			srcIP varchar(15),
+ 				    srcPort varchar(5),
+ 					dstIP varchar(15),
+ 					dstPort varchar(15)
+);
+
+create view temp as 
+	(SELECT UUID() AS flowID, Source_IP AS srcIP, Source_Port AS srcPort, Destination_IP AS dstIP, Destination_Port AS dstPort
+	FROM  Dataset1
+	GROUP BY Source_IP, Source_Port, Destination_IP, Destination_Port)
+	union 
+	(SELECT UUID() AS flowID, src_ip AS srcIP, src_port AS srcPort, dst_ip AS dstIP, dst_port AS dstPort
+	FROM  Dataset2
+	GROUP BY src_ip, src_port, dst_ip, dst_port);
+
+insert into Flows
+	SELECT flowID, srcIP, srcPort, dstIP, dstPort
+	FROM  temp
+	GROUP BY srcIP, srcPort, dstIP, dstPort;
+
+-- drop the possible duplicates by adding an index to a table https://stackoverflow.com/questions/3311903/remove-duplicate-rows-in-mysql
+ALTER IGNORE TABLE temp
+ADD UNIQUE INDEX idx_name (srcIP, srcPort, dstIP, dstPort);
