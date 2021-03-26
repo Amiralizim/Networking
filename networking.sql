@@ -1,10 +1,11 @@
 -- ------------------------------------------------
 --
 -- Networking Database
-
+-- TODO: FlowIndex -> UniqueIndexName` (`Flow_ID`, `flow_Duration`, `flow_Start`)
+-- TODO: Flow_ID -> soureIp-SourcePort-DestinationIp-DestinationPort-Proto
 -- ip-network-traffic-flows-labeled-with-87-apps -------------------------------------------------------------------
 create table Dataset1 (
-	  Flow_ID varchar(40), 
+	  Flow_ID varchar(46), 
 	  Source_IP varchar(15),
 	  Source_Port varchar(5), 
 	  Destination_IP varchar(15), 
@@ -90,6 +91,31 @@ load data infile '/var/lib/mysql-files/21-Network-Traffic/Dataset-Unicauca-Versi
 		lines terminated by '\n'
 		ignore 1 lines;
 
+-- parse the data in the table
+-- This includes: 
+-- 1) reformat the timestamp field and store it in Flow_Start
+-- 2) reformat Link_ID -> soureIp-SourcePort-DestinationIp-DestinationPort
+-- 3) flow_index -> a uniqueue identifier for each flow
+--				 -> flowId-flowDuration-flowStart
+
+ALTER TABLE Dataset1
+	ADD Link_ID varchar(60);
+
+UPDATE Dataset1 d1
+	SET d1.Link_ID = CONCAT(d1.Source_IP, '-', d1.Source_Port, '-', d1.Destination_IP, '-', d1.Destination_Port);
+
+ALTER TABLE Dataset1
+	ADD Flow_Start varchar(60);
+
+UPDATE Dataset1 d1
+	SET d1.Flow_Start = DATE_FORMAT((CONCAT(SUBSTRING(d1.Timestamp, 7, 4), '-', SUBSTRING(d1.Timestamp,4, 2), '-',  SUBSTRING(d1.Timestamp,1,2), ' ',SUBSTRING(d1.Timestamp,11,8))), "%Y-%m-%d %h:%i:%s");
+
+ALTER TABLE Dataset1	
+	ADD Flow_index varchar(100);
+
+UPDATE Dataset1 d1
+	SET d1.Flow_index = CONCAT(d1.Link_ID, '-', d1.Flow_Start, '-',  d1.Flow_Duration, '-', d1.Protocol);
+
 
 -- Unicauca-dataset-April-June-2019-Network-flows  -------------------------------------------------------------------
 create table Dataset2 (
@@ -150,26 +176,44 @@ load data infile '/var/lib/mysql-files/21-Network-Traffic/Unicauca-dataset-April
 		lines terminated by '\n'
 		ignore 1 lines;
 
+-- parse the data in the table
+-- This includes: 
+-- 1) reformat the flowDuration field and store it in Flow_Duration
+-- 2) reformat Link_ID -> soureIp-SourcePort-DestinationIp-DestinationPort
+-- 3) flow_index -> a uniqueue identifier for each flow
+--				 -> flowId-flowDuration-flowStart
 
--- Links Table -------------------------------------------------------------------
+ALTER TABLE Dataset2
+	ADD Link_ID varchar(60);
+
+UPDATE Dataset2 d2
+	SET d2.Link_ID = CONCAT(d2.src_ip, '-', d2.src_port, '-', d2.dst_ip, '-', d2.dst_port);
+
+ALTER TABLE Dataset2
+	ADD Flow_Start varchar(60);
+
+UPDATE Dataset2 d2
+	SET d2.Flow_Start = FROM_UNIXTIME(flowStart, "%Y-%m-%d %h:%i:%s");
+
+ALTER TABLE Dataset2
+	ADD Flow_Duration decimal(10);
+
+UPDATE Dataset2 d2
+	SET d2.Flow_Duration = TIME_TO_SEC(timediff(FROM_UNIXTIME(d2.flowDuration), FROM_UNIXTIME(0)));
+
+ALTER TABLE Dataset2	
+	ADD Flow_index varchar(100);
+
+UPDATE Dataset2 d2
+	SET d2.Flow_index = CONCAT(d2.Link_ID, '-', d2.Flow_Start, '-',  d2.Flow_Duration, '-', d2.proto);
+
+-- Links table -------------------------------------------------------------------
 select '----------------------------------------------------------------' as '';
 select 'Create Links' as '';
 
-create table Links
-
-create table Links (srcIP varchar(15),
- 				    srcPort varchar(5),
- 					dstIP varchar(15),
- 					dstPort varchar(15),
---- Constraints
--- 					primary key (flowID)
-);
-
--- Links Flows -------------------------------------------------------------------
-select '----------------------------------------------------------------' as '';
-select 'Create Flows' as '';
-
-create table Flows (flowID char(38),
+-- here im getting rid of duplicates with the primary key constraint
+create table Links (Flow_index char(100),
+					Link_ID varchar(60),
 	    			srcIP varchar(15),
  				    srcPort varchar(5),
  					dstIP varchar(15),
@@ -177,19 +221,64 @@ create table Flows (flowID char(38),
 );
 
 create view temp as 
-	(SELECT UUID() AS flowID, Source_IP AS srcIP, Source_Port AS srcPort, Destination_IP AS dstIP, Destination_Port AS dstPort
+	(SELECT Flow_index, Link_ID, Source_IP AS srcIP, Source_Port AS srcPort, Destination_IP AS dstIP, Destination_Port AS dstPort
 	FROM  Dataset1
 	GROUP BY Source_IP, Source_Port, Destination_IP, Destination_Port)
 	union 
-	(SELECT UUID() AS flowID, src_ip AS srcIP, src_port AS srcPort, dst_ip AS dstIP, dst_port AS dstPort
+	(SELECT Flow_index, Link_ID, src_ip AS srcIP, src_port AS srcPort, dst_ip AS dstIP, dst_port AS dstPort
 	FROM  Dataset2
 	GROUP BY src_ip, src_port, dst_ip, dst_port);
 
-insert into Flows
-	SELECT flowID, srcIP, srcPort, dstIP, dstPort
-	FROM  temp
-	GROUP BY srcIP, srcPort, dstIP, dstPort;
+insert into Links
+	SELECT Flow_index, Link_ID, srcIP, srcPort, dstIP, dstPort
+	FROM  temp;
 
--- drop the possible duplicates by adding an index to a table https://stackoverflow.com/questions/3311903/remove-duplicate-rows-in-mysql
-ALTER IGNORE TABLE temp
-ADD UNIQUE INDEX idx_name (srcIP, srcPort, dstIP, dstPort);
+drop view temp;
+
+ALTER IGNORE TABLE Links
+ADD UNIQUE INDEX idx_name (Link_ID); 
+
+alter table Links
+ADD CONSTRAINT Pk_Link_ID primary key (Link_ID);
+
+-- Flows table -------------------------------------------------------------------
+select '----------------------------------------------------------------' as '';
+select 'Create Flows' as '';
+
+create table Flows (Flow_index char(100),
+					Link_ID varchar(60),
+					Flow_Start varchar(60),
+					Flow_Duration decimal(10),
+					Protocol decimal(2),
+					primary key (Flow_index)
+					);
+
+create view temp as 
+	(SELECT DISTINCT Flow_index, Link_ID, Flow_Start , Flow_Duration, Protocol
+	FROM  Dataset1)
+	union 
+	(SELECT DISTINCT Flow_index, Link_ID, Flow_Start , Flow_Duration, proto AS Protocol
+	FROM  Dataset2);
+
+insert into Flows
+	SELECT Flow_index, Link_ID, Flow_Start, Flow_Duration, Protocol
+	FROM  temp;
+
+drop view temp;
+
+alter table Flows
+ADD CONSTRAINT fk_Link_ID foreign key (Link_ID) references Links(Link_ID);
+
+-- Forward Flows table -------------------------------------------------------------------
+-- select '----------------------------------------------------------------' as '';
+-- select 'Create FowradFlows' as '';
+-- remember to reference Flow_index
+
+-- Backwards Flows table -------------------------------------------------------------------
+-- select '----------------------------------------------------------------' as '';
+-- select 'Create BackwardFlows' as '';
+-- remember to reference Flow_index
+
+
+
+
