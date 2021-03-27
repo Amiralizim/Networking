@@ -383,5 +383,23 @@ drop view temp;
 alter table BackwardFlows	
 ADD CONSTRAINT fk_Flow_index foreign key (Flow_index) references Flows(Flow_index);	
 
+-- Packets table -------------------------------------------------------------------
+-- select '----------------------------------------------------------------' as '';
+-- select 'Create ForwardFlows' as '';
 
+-- Protocol table -------------------------------------------------------------------
+select '----------------------------------------------------------------' as '';
+select 'Create Protocol_info' as '';
 
+create table Protocol_info(Flow_index char(100) primary key,
+							Protocol decimal(2),
+							L7Protocol decimal(3) DEFAULT NULL,
+	  						ProtocolName varchar(15) DEFAULT NULL, 
+							category varchar(7) DEFAULT NULL, 
+	 						application_protocol varchar(6) DEFAULT NULL, 
+	 						web_service varchar(20) DEFAULT NULL,
+);
+
+-- remember to reference Flow_index
+alter table Protocol_info	
+ADD CONSTRAINT fk_Flow_index foreign key (Flow_index) references Flows(Flow_index);	
