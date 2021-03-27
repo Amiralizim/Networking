@@ -270,15 +270,118 @@ alter table Flows
 ADD CONSTRAINT fk_Link_ID foreign key (Link_ID) references Links(Link_ID);
 
 -- Forward Flows table -------------------------------------------------------------------
--- select '----------------------------------------------------------------' as '';
--- select 'Create FowradFlows' as '';
+select '----------------------------------------------------------------' as '';
+select 'Create ForwardFlows' as '';
+-- using the naming convention of dataset 2 as they are easier to understand
+
+create table ForwardFlows(Flow_index char(100),
+						   f_pktTotalCount decimal(8),
+						   f_octetTotalCount decimal(10),
+						   f_min_ps decimal(5),
+						   f_max_ps decimal(5),
+						   f_avg_ps decimal(5),
+						   f_std_dev_ps decimal(4),
+						   f_min_piat decimal(9), 
+						   f_max_piat decimal(9), 
+						   f_avg_piat decimal(9), 
+						   f_std_dev_piat decimal(8),
+						   primary key (Flow_index)
+						   );
+
+create view temp as 
+	(SELECT DISTINCT Flow_index, 
+					Total_Fwd_Packets AS f_pktTotalCount, 
+					Total_Length_of_Fwd_Packets AS f_octetTotalCount, 
+					Fwd_Packet_Length_Min AS f_min_ps, 
+					Fwd_Packet_Length_Max AS f_max_ps,
+					Fwd_Packet_Length_Mean AS f_avg_ps,
+					Fwd_Packet_Length_Std AS f_std_dev_ps,
+					Fwd_IAT_Min AS f_min_piat,
+					Fwd_IAT_Max AS f_max_piat,
+					Fwd_IAT_Mean AS f_avg_piat,
+					Fwd_IAT_Std AS f_std_dev_piat
+	FROM  Dataset1)
+	union 
+	(SELECT DISTINCT Flow_index, 
+					f_pktTotalCount, 
+					f_octetTotalCount, 
+					f_min_ps, 
+					f_max_ps,
+					f_avg_ps,
+					f_std_dev_ps,
+					f_min_piat,
+					f_max_piat,
+					f_avg_piat,
+					f_std_dev_piat
+	FROM  Dataset2);
+
+insert into ForwardFlows
+	SELECT Flow_index, f_pktTotalCount, f_octetTotalCount, f_min_ps, f_max_ps, f_avg_ps, f_std_dev_ps,
+														   f_min_piat, f_max_piat, f_avg_piat, f_std_dev_piat
+	FROM  temp;
+
+drop view temp;
+
 -- remember to reference Flow_index
+alter table ForwardFlows	
+ADD CONSTRAINT fk_Flow_index foreign key (Flow_index) references Flows(Flow_index);			
 
 -- Backwards Flows table -------------------------------------------------------------------
--- select '----------------------------------------------------------------' as '';
--- select 'Create BackwardFlows' as '';
--- remember to reference Flow_index
+select '----------------------------------------------------------------' as '';
+select 'Create BackwardFlows' as '';
 
+create table BackwardFlows(Flow_index char(100),
+						   b_pktTotalCount decimal(8),
+						   b_octetTotalCount decimal(10),
+						   b_min_ps decimal(5),
+						   b_max_ps decimal(5),
+						   b_avg_ps decimal(5),
+						   b_std_dev_ps decimal(4),
+						   b_min_piat decimal(9), 
+						   b_max_piat decimal(9), 
+						   b_avg_piat decimal(9), 
+						   b_std_dev_piat decimal(8),
+						   primary key (Flow_index)
+						   );
+
+create view temp as 
+	(SELECT DISTINCT Flow_index, 
+					Total_Backward_Packets AS b_pktTotalCount, 
+					Total_Length_of_Bwd_Packets AS b_octetTotalCount, 
+					Bwd_Packet_Length_Min AS b_min_ps, 
+					Bwd_Packet_Length_Max AS b_max_ps,
+					Bwd_Packet_Length_Mean AS b_avg_ps,
+					Bwd_Packet_Length_Std AS b_std_dev_ps,
+					Bwd_IAT_Min AS b_min_piat,
+					Bwd_IAT_Max AS b_max_piat,
+					Bwd_IAT_Mean AS b_avg_piat,
+					Bwd_IAT_Std AS b_std_dev_piat
+	FROM  Dataset1)
+	union 
+	(SELECT DISTINCT Flow_index, 
+					b_pktTotalCount, 
+					b_octetTotalCount, 
+					b_min_ps, 
+					b_max_ps,
+					b_avg_ps,
+					b_std_dev_ps,
+					b_min_piat,
+					b_max_piat,
+					b_avg_piat,
+					b_std_dev_piat
+	FROM  Dataset2);
+
+insert into BackwardFlows
+	SELECT Flow_index, b_pktTotalCount, b_octetTotalCount, b_min_ps, b_max_ps, b_avg_ps, b_std_dev_ps,
+	 													   b_min_piat, b_max_piat, b_avg_piat, b_std_dev_piat
+	FROM  temp;
+
+drop view temp;
+
+
+-- remember to reference Flow_index
+alter table BackwardFlows	
+ADD CONSTRAINT fk_Flow_index foreign key (Flow_index) references Flows(Flow_index);	
 
 
 
