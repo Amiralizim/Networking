@@ -4,7 +4,7 @@
 -- TODO: FlowIndex -> UniqueIndexName` (`Flow_ID`, `flow_Duration`, `flow_Start`)
 -- TODO: Flow_ID -> soureIp-SourcePort-DestinationIp-DestinationPort-Proto
 -- ip-network-traffic-flows-labeled-with-87-apps -------------------------------------------------------------------
-create table Dataset1 (
+/* create table Dataset1 (
 	  Flow_ID varchar(46), 
 	  Source_IP varchar(15),
 	  Source_Port varchar(5), 
@@ -267,7 +267,7 @@ insert into Flows
 drop view temp;
 
 alter table Flows
-ADD CONSTRAINT fk_Link_ID foreign key (Link_ID) references Links(Link_ID);
+ADD CONSTRAINT fk_Link_ID foreign key (Link_ID) references Links(Link_ID); */
 
 -- Forward Flows table -------------------------------------------------------------------
 select '----------------------------------------------------------------' as '';
@@ -284,8 +284,7 @@ create table ForwardFlows(Flow_index char(100),
 						   f_min_piat decimal(9), 
 						   f_max_piat decimal(9), 
 						   f_avg_piat decimal(9), 
-						   f_std_dev_piat decimal(8),
-						   primary key (Flow_index)
+						   f_std_dev_piat decimal(8)
 						   );
 
 create view temp as 
@@ -322,7 +321,12 @@ insert into ForwardFlows
 
 drop view temp;
 
--- remember to reference Flow_index
+ALTER IGNORE TABLE ForwardFlows
+ADD UNIQUE INDEX f_index_name (Flow_index); 
+
+alter table ForwardFlows
+ADD CONSTRAINT Pk_Flow_ID primary key (Flow_index);
+
 alter table ForwardFlows	
 ADD CONSTRAINT fk_Flow_index foreign key (Flow_index) references Flows(Flow_index);			
 
@@ -340,8 +344,7 @@ create table BackwardFlows(Flow_index char(100),
 						   b_min_piat decimal(9), 
 						   b_max_piat decimal(9), 
 						   b_avg_piat decimal(9), 
-						   b_std_dev_piat decimal(8),
-						   primary key (Flow_index)
+						   b_std_dev_piat decimal(8)
 						   );
 
 create view temp as 
@@ -378,10 +381,28 @@ insert into BackwardFlows
 
 drop view temp;
 
+ALTER IGNORE TABLE BackwardFlows
+ADD UNIQUE INDEX b_index_name (Flow_index); 
 
 -- remember to reference Flow_index
 alter table BackwardFlows	
 ADD CONSTRAINT fk_Flow_index foreign key (Flow_index) references Flows(Flow_index);	
 
+alter table BackwardFlows
+ADD CONSTRAINT Pk_Flow_ID primary key (Flow_index);
+
+alter table BackwardFlows	
+ADD CONSTRAINT fk_Flow_index foreign key (Flow_index) references Flows(Flow_index);	
+
+
+-- Protocol_reference table -------------------------------------------------------------------
+select '----------------------------------------------------------------' as '';
+select 'Create Protocol_reference' as '';
+
+create table Protocol_reference(Flow_index char(100),
+						   		protocol_index decimal(8)
+						   );
+
+		
 
 
