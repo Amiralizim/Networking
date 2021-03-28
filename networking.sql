@@ -4,7 +4,7 @@
 -- TODO: FlowIndex -> UniqueIndexName` (`Flow_ID`, `flow_Duration`, `flow_Start`)
 -- TODO: Flow_ID -> soureIp-SourcePort-DestinationIp-DestinationPort-Proto
 -- ip-network-traffic-flows-labeled-with-87-apps -------------------------------------------------------------------
-/* create table Dataset1 (
+create table Dataset1 (
 	  Flow_ID varchar(46), 
 	  Source_IP varchar(15),
 	  Source_Port varchar(5), 
@@ -267,9 +267,9 @@ insert into Flows
 drop view temp;
 
 alter table Flows
-ADD CONSTRAINT fk_Link_ID foreign key (Link_ID) references Links(Link_ID); */
+ADD CONSTRAINT fk_Link_ID foreign key (Link_ID) references Links(Link_ID);
 
--- Forward Flows table -------------------------------------------------------------------
+/* -- Forward Flows table -------------------------------------------------------------------
 select '----------------------------------------------------------------' as '';
 select 'Create ForwardFlows' as '';
 -- using the naming convention of dataset 2 as they are easier to understand
@@ -403,4 +403,4 @@ create table Protocol_info(Flow_index char(100) primary key,
 
 -- remember to reference Flow_index
 alter table Protocol_info	
-ADD CONSTRAINT fk_Flow_index foreign key (Flow_index) references Flows(Flow_index);	
+ADD CONSTRAINT fk_Flow_index foreign key (Flow_index) references Flows(Flow_index);	 */
