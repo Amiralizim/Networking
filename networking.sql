@@ -79,9 +79,17 @@ create table Dataset1 (
 	  Init_Win_bytes_backward decimal(5), 
 	  act_data_pkt_fwd decimal(6), 
 	  min_seg_size_forward decimal(3),
+	  Active_Mean decimal(10),  
+	  Active_Std decimal(10), 
+	  Active_Max decimal(10),
+	  Active_Min decimal(10),
+	  Idle_Mean decimal(10),
+	  Idle_Std decimal(10),
+	  Idle_Max decimal(10),
+	  Idle_Min decimal(10),
 	  Label varchar(6),
 	  L7Protocol decimal(3),
-	  ProtocolName varchar(15)
+	  ProtocolName varchar(20)
 );
 load data infile '/var/lib/mysql-files/21-Network-Traffic/Dataset-Unicauca-Version2-87Atts.csv' ignore into table Dataset1
 		fields terminated by ','
