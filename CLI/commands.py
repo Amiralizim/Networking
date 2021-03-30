@@ -4,9 +4,6 @@ from query import *
 '''Mantain this token to keep track is session is admin session or user session'''
 is_admin_session = 0
 
-@click.group()
-def cli():
-    pass
 
 
 @click.command()
@@ -19,6 +16,7 @@ def login(username, password):
         generate_flow_id()
     else:
         click.secho("ERROR: INCORRECT CREDENTIALS", fg = 'red')
+
 
 
 
@@ -38,5 +36,3 @@ def generate_flow_id(sourceip, destinationip, sourceport, destinationport):
     find_flows(sourceip, sourceport, destinationip, destinationport)
 
 
-cli.add_command(login)
-cli.add_command(generate_flow_id)
