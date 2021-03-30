@@ -476,3 +476,17 @@ GROUP BY Flow_index;
 
 alter table Flags
 ADD CONSTRAINT Pk_F_Flow_ID primary key (Flow_index);
+
+
+
+drop table if exists userinfo;
+
+create table userinfo (userID varchar(100),
+					passwd char(64),
+					isadmin decimal(1),
+					primary key (userID)
+					);
+
+INSERT INTO userinfo (userID, passwd, isadmin) 
+VALUES ('admin','ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f',1), --Password123
+('user', 'c6ba91b90d922e159893f46c387e5dc1b3dc5c101a5a4522f03b987177a24a91', 0); --Password456
