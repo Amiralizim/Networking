@@ -447,3 +447,26 @@ INSERT INTO Protocol2
 SELECT Flow_index, proto, category, application_protocol, web_service
 FROM aggregate_dataset 
 WHERE origin = '2'; 
+
+
+------------------------------------------------------------- USERS -----------------------------------------------------------------------
+DROP TABLE IF EXISTS userinfo;
+
+CREATE TABLE userinfo (userID varchar(100),
+					passwd char(64),
+					isadmin decimal(1),
+					primary key (userID)
+					);
+
+INSERT INTO userinfo (userID, passwd, isadmin)  --Hardcode two users one with admin rights and one without
+VALUES ('admin','ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f',1), --Password123
+('user', 'c6ba91b90d922e159893f46c387e5dc1b3dc5c101a5a4522f03b987177a24a91', 0); --Password456
+
+
+------------------------------------------------------------- ANNOTATIONS -----------------------------------------------------------------------
+DROP TABLE IF EXISTS annotations;
+
+CREATE TABLE annotations (flowID INT,
+					userID CHAR(64),
+					comments VARCHAR(1000)
+					); -- Figure out which PKs and FKs to use here, also add this to ER 
