@@ -3,6 +3,7 @@ from query import *
 
 '''Mantain this token to keep track is session is admin session or user session'''
 is_admin_session = 0
+current_user = None
 
 
 
@@ -11,11 +12,23 @@ is_admin_session = 0
 @click.option("--password", prompt = "Please enter your password:", help = "Provide the password", default = "", hide_input = True)
 def login(username, password):
     if authenticate(username, password) == True:
+        current_user = username
         click.secho("Succesfully logged in!", fg = 'green')
         is_admin_session = get_session_token(username)
-        generate_flow_id()
+        annotate()
     else:
         click.secho("ERROR: INCORRECT CREDENTIALS", fg = 'red')
+
+
+''' Use this command to annotate a particular flowID , a non admin user can annotate'''
+@click.command()
+@click.option("--flowid", prompt="Please enter the flowid which you wish to annotate", help = "Provide the flowid", default = "")
+@click.option("--annotation", prompt = "Please provide the annotation text")
+def annotate(flowid, annotation):
+    if add_annotation(current_user, flowid, annotation) == 1:
+        click.secho("Succesfully added in annotation", fg = 'green')
+    else:
+        click.secho("Error adding annotation", fg = 'red')
 
 
 

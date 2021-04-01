@@ -16,7 +16,7 @@ def create_connection(host_name, user_name, user_password):
             passwd=user_password,
             database = 'networking'
         )
-        #print("Connection to MySQL DB successful")
+        print("Connection to MySQL DB successful")
     except Error as e:
         print(f"The error '{e}' occurred")
 
@@ -57,9 +57,14 @@ def get_session_token(username):
     query_result = cursor.fetchall()
     return query_result[0][0]
 
+def add_annotation(username, flow_id, annotation):
+    query = ("INSERT INTO annotations VALUES ({}, \'{}\', \'{}\');").format(flow_id, username, annotation)
+    cursor.execute(query)
+    count = cursor.rowcount
+    query_result = cursor.fetchall()
+    connection.commit() #WHENEVER MAKING CHANGES TO THE DATABASE REMEMBER TO COMMIT TO THE CONNECTION OTHERWISE THEY WILL NOT BE SAVED
+    return count
+
 connection = create_connection('localhost', 'root', 'root')
 cursor = connection.cursor()
-
-
-
 
