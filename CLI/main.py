@@ -1,4 +1,4 @@
-from commands import *
+from commands import login
 
 
 if __name__ == '__main__':

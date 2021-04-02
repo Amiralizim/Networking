@@ -1,4 +1,4 @@
-------------------------------------------------
+-- ------------------------------------------------
 
 -- Networking Database
 -- ip-network-traffic-flows-labeled-with-87-apps -------------------------------------------------------------------
@@ -279,7 +279,7 @@ INSERT INTO aggregate_dataset (src_ip, src_port, dst_ip, dst_port, proto, min_ps
 	 						   f_std_dev_ps, f_min_piat, f_max_piat, f_avg_piat, f_std_dev_piat,b_pktTotalCount, 
 							   b_octetTotalCount, b_min_ps,  b_max_ps,  b_avg_ps,  b_std_dev_ps, b_min_piat,  b_max_piat,  
 							   b_avg_piat,  b_std_dev_piat, category, application_protocol, web_service, origin)
-SELECT src_ip, src_port, dst_ip, dst_port, proto, min_ps, max_ps, avg_ps, std_dev_ps, flowStart,  
+SELECT src_ip, src_port, dst_ip, dst_port, proto, min_ps, max_ps, avg_ps, std_dev_ps, Flow_Start,  
 	 						   flowDuration, min_piat, max_piat, avg_piat, std_dev_piat, f_pktTotalCount, f_octetTotalCount, f_min_ps, f_max_ps, f_avg_ps, 
 	 						   f_std_dev_ps, f_min_piat, f_max_piat, f_avg_piat, f_std_dev_piat,b_pktTotalCount, 
 							   b_octetTotalCount, b_min_ps,  b_max_ps,  b_avg_ps,  b_std_dev_ps, b_min_piat,  b_max_piat,  
@@ -457,10 +457,12 @@ CREATE TABLE userinfo (userID varchar(100),
 					isadmin decimal(1),
 					primary key (userID)
 					);
-
-INSERT INTO userinfo (userID, passwd, isadmin)  --Hardcode two users one with admin rights and one without
-VALUES ('admin','ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f',1), --Password123
-('user', 'c6ba91b90d922e159893f46c387e5dc1b3dc5c101a5a4522f03b987177a24a91', 0); --Password456
+--Hardcode two users one with admin rights and one without
+--Password123
+--Password456
+INSERT INTO userinfo (userID, passwd, isadmin)  
+VALUES ('admin','ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f',1), 
+('user', 'c6ba91b90d922e159893f46c387e5dc1b3dc5c101a5a4522f03b987177a24a91', 0); 
 
 
 ------------------------------------------------------------- ANNOTATIONS -----------------------------------------------------------------------
@@ -469,4 +471,5 @@ DROP TABLE IF EXISTS annotations;
 CREATE TABLE annotations (flowID INT,
 					userID CHAR(64),
 					comments VARCHAR(1000)
-					); -- Figure out which PKs and FKs to use here, also add this to ER 
+					); 
+-- Figure out which PKs and FKs to use here, also add this to ER 
