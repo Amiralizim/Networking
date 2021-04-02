@@ -19,7 +19,7 @@ def create_connection(host_name, user_name, user_password):
         )
         print("Connection to MySQL DB successful")
     except Error as e:
-        print(f"The error '{e}' occurred")
+        print("The error '{e}' occurred")
 
     return connection
 
@@ -27,14 +27,48 @@ def initialize_db():
     connection = create_connection('localhost', 'root', 'root')
     cursor = connection.cursor()
 
-def find_flows(sourceip, sourceport, destinationip, destinationport):
+
+def find_links(sourceip, sourceport, destinationip, destinationport):
+    """
+    Fetch Link_ID from table Links.
+    inputs: source ip, port, destination ip, port
+    output: corresponding Link_ID 
+    """
+
+    result = ""
+
     link_id = ("{}-{}-{}-{}").format(sourceip, sourceport, destinationip, destinationport)
-    query = ("SELECT * FROM Links WHERE Link_ID = \'{}\' LIMIT 10; ").format(link_id)
+    query = ("SELECT Link_ID FROM Links WHERE Link_ID = \'{}\'; ").format(link_id)
     cursor.execute(query)
+
     for x in cursor.fetchall():
-        print (x)
-    cursor.close()
-    connection.close()
+        #print (x)
+        result += x[0]            # x is a tuple type, Link_ID is a string type
+
+    # cursor.close()
+    # connection.close()
+    return result
+
+def find_flows(Link_ID):
+    """
+    Fetch Flow_index from table Flows.
+    input: Link_ID
+    outputs: corresponding Flow_index associated with the Link_ID
+    """
+
+    result = []
+
+    # TODO: no limits for now, may need to add later as it could get enormous
+    query = ("SELECT Flow_index FROM Flows WHERE Link_ID = \'{}\' ; ").format(Link_ID)
+    cursor.execute(query)
+
+    for x in cursor.fetchall():
+        #print (x)
+        result.append(x[0])           # x is a tuple type, Flow_index is an INT
+    
+    return result
+    
+
 
 def hash_password(password):
     result = hashlib.sha256(password.encode())

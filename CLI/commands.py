@@ -34,7 +34,8 @@ def client_option(clientchoice):
     if(clientchoice == "protocol"):
         print("TO BE IMPLEMENTED")
     if(clientchoice == "links"):
-        print("TO BE IMPLEMENTED")
+        #generate_flow_index("10.200.1.118", "0", "10.200.7.194", "0") # test purpose
+        generate_flow_index(None, None, None, None)
 
 ''' Use this command to annotate a particular time '''
 @click.command()
@@ -81,21 +82,58 @@ def annotate(flowid, annotation):
         click.secho("Error adding annotation", fg = 'red')
 
 
-
-
 ''' Use this command to get the source details and destiantion details which can be used to generate our flow_id '''
 @click.command()
 @click.option("--sourceip", prompt="Enter the sourceip", help="Provide the sourceip", default = "")
 @click.option("--sourceport", prompt="Enter the sourceport", help="Provide the sourceport", default = "")
 @click.option("--destinationip", prompt="Enter the destinationip", help="Provide the destinationip", default = "")
 @click.option("--destinationport", prompt="Enter the destinationport", help="Provide the destinationport", default = "")
-def generate_flow_id(sourceip, destinationip, sourceport, destinationport):
+def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
     source = sourceip + ":" + sourceport
     click.secho(source, fg = 'blue')
     destination = destinationip + ":" + destinationport
     click.secho(destination, fg = 'green')
     click.secho("The found flows are: ")
-    click.secho("Flow_index, Link_ID, srcIP, srcPort, dstPort", fg = 'yellow')
-    find_flows(sourceip, sourceport, destinationip, destinationport)
+    click.secho("Flow_index, Link_ID", fg = 'yellow')
+    
+    # test
+    # sourceip = "10.200.1.118"
+    # sourceport = "0"
+    # destinationip = "10.200.7.194"
+    # destinationport = "0"
+
+    Link_ID = find_links(sourceip, sourceport, destinationip, destinationport)
+    Flow_index = find_flows(Link_ID)  # Flow_index is a [] where each element is a Flow_index (int)
+    print(Flow_index)
+
+
+''' Use this command to get the Flow_index of a flow that its information will be provided '''
+@click.command()
+@click.option("--Flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index", default = "")
+def display_or_annotate(Flow_index):
+    choice = 0
+    while (choice != 7):
+        click.secho("(1) check total packet information")
+        click.secho("(2) check forward packet information")
+        click.secho("(3) check backward packet information")
+        click.secho("(4) check protocol packet information")
+        click.secho("(5) check flag packet information")
+        click.secho("(6) add an annotation")
+        click.secho("(7) exit")
+        choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7)', type=int)
+
+        # TODO: implement each of these print functions, for protocol and flag need to check if its from origin 1 or 2 before printing
+        # if (choice == 1):
+        #     print_total(Flow_index)
+        # elif (choice == 2):
+        #     print_forward(Flow_index)
+        # elif (choice == 3):
+        #     print_backward(Flow_index)
+        # elif (choice == 4):
+        #     print_protocol(Flow_index)
+        # elif (choice == 5):
+        #     print_flag(Flow_index)
+        # elif (choice == 6):
+        #     annotate(Flow_index, None)         # TODO for ppt: this will still ask the user for the Flow_index, which is redundant
 
 
