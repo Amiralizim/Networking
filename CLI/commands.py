@@ -26,14 +26,14 @@ def login(username, password):
 
 ''' Use this command to choose the client option '''
 @click.command()
-@click.option("--clientchoice", prompt="Please one of the following options to recieve information: time, link_id")
+@click.option("--clientchoice", prompt="Please one of the following options to recieve information: time, links, protocol")
 def client_option(clientchoice):
     global current_user
     if(clientchoice == "time"):
         date_option(None, None)
     if(clientchoice == "protocol"):
         print("TO BE IMPLEMENTED")
-    if(clientchoice == "links")
+    if(clientchoice == "links"):
         print("TO BE IMPLEMENTED")
 
 ''' Use this command to annotate a particular time '''
