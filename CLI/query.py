@@ -103,21 +103,29 @@ def add_annotation(username, flow_id, annotation):
 def get_flow_dates(date1, date2):
     query = ('SELECT DISTINCT DATE_FORMAT(Flow_Start, "%Y-%m-%d") FROM Flows WHERE Flow_Start between {} and {}').format(date1, date2)
     cursor.execute(query)
+    result = []
     query_result = cursor.fetchall()
-    return query_result[0][0]
+    for x in query_result: 
+        result.append(x[0])
+    return result
     
 def get_flow_times(time1):
-    query = ('SELECT DATE_FORMAT(Flow_Start, "%h:%i:%s") FROM Flows WHERE FLOW_START LIKE "{}%"').format(time1)
+    query = ('SELECT DISTINCT DATE_FORMAT(Flow_Start, "%h:%i:%s") FROM Flows WHERE FLOW_START LIKE "{}%"').format(time1)
     cursor.execute(query)
+    result = []
     query_result = cursor.fetchall()
-    return query_result[0][0]
+    for x in query_result:
+        result.append(x[0])
+    return result
 
 def get_flows_based_on_time(date_time):
     query = ('SELECT Flow_index FROM Flows WHERE Flow_Start Like "{}"').format(date_time)
-    print(query)
     cursor.execute(query)
+    result = []
     query_result = cursor.fetchall()
-    return query_result[0][0]
+    for x in query_result:
+        result.append(x[0])
+    return result
 
 connection = create_connection('localhost', 'root', 'root')
 cursor = connection.cursor()
