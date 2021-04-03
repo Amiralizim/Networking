@@ -84,35 +84,33 @@ def annotate(flowid, annotation):
 
 ''' Use this command to get the source details and destiantion details which can be used to generate our flow_id '''
 @click.command()
-@click.option("--sourceip", prompt="Enter the sourceip", help="Provide the sourceip", default = "")
-@click.option("--sourceport", prompt="Enter the sourceport", help="Provide the sourceport", default = "")
-@click.option("--destinationip", prompt="Enter the destinationip", help="Provide the destinationip", default = "")
-@click.option("--destinationport", prompt="Enter the destinationport", help="Provide the destinationport", default = "")
+@click.option("--sourceip", prompt="Enter the sourceip", help="Provide the sourceip", default = "10.200.1.118")
+@click.option("--sourceport", prompt="Enter the sourceport", help="Provide the sourceport", default = "0")
+@click.option("--destinationip", prompt="Enter the destinationip", help="Provide the destinationip", default = "10.200.7.194")
+@click.option("--destinationport", prompt="Enter the destinationport", help="Provide the destinationport", default = "0")
 def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
     source = sourceip + ":" + sourceport
     click.secho(source, fg = 'blue')
     destination = destinationip + ":" + destinationport
     click.secho(destination, fg = 'green')
-    click.secho("The found flows are: ")
-    click.secho("Flow_index, Link_ID", fg = 'yellow')
-    
-    # test
-    # sourceip = "10.200.1.118"
-    # sourceport = "0"
-    # destinationip = "10.200.7.194"
-    # destinationport = "0"
 
     Link_ID = find_links(sourceip, sourceport, destinationip, destinationport)
-    Flow_index = find_flows(Link_ID)  # Flow_index is a [] where each element is a Flow_index (int)
-    print(Flow_index)
+    Flow_indexes = find_flows(Link_ID)  # Flow_index is a [] where each element is a Flow_index (int)
+
+    click.secho("The Link_ID is:           ", fg="green", nl=False)
+    click.echo(Link_ID)
+    click.secho("The found Flow_index are: ", fg="green", nl=False)
+    click.echo(Flow_indexes)
+
+    display_or_annotate(None)
 
 
 ''' Use this command to get the Flow_index of a flow that its information will be provided '''
 @click.command()
-@click.option("--Flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index", default = "")
-def display_or_annotate(Flow_index):
-    choice = 0
-    while (choice != 7):
+@click.option("--flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index", default = "92612")
+def display_or_annotate(flow_index):
+    choice = ""
+    while (choice != "7"):
         click.secho("(1) check total packet information")
         click.secho("(2) check forward packet information")
         click.secho("(3) check backward packet information")
@@ -120,20 +118,20 @@ def display_or_annotate(Flow_index):
         click.secho("(5) check flag packet information")
         click.secho("(6) add an annotation")
         click.secho("(7) exit")
-        choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7)', type=int)
+        choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7)')  # choice is string 
 
         # TODO: implement each of these print functions, for protocol and flag need to check if its from origin 1 or 2 before printing
-        # if (choice == 1):
-        #     print_total(Flow_index)
-        # elif (choice == 2):
-        #     print_forward(Flow_index)
-        # elif (choice == 3):
-        #     print_backward(Flow_index)
-        # elif (choice == 4):
-        #     print_protocol(Flow_index)
-        # elif (choice == 5):
-        #     print_flag(Flow_index)
-        # elif (choice == 6):
-        #     annotate(Flow_index, None)         # TODO for ppt: this will still ask the user for the Flow_index, which is redundant
+        if (choice == "1"):
+            display_total(flow_index)
+        elif (choice == "2"):
+            display_forward(flow_index)
+        elif (choice == "3"):
+            display_backward(flow_index)
+        elif (choice == "4"):
+            display_protocol(flow_index)
+        elif (choice == "5"):
+            display_flag(flow_index)
+        # elif (choice == "6"):
+        #     annotate(flow_index, None)         # TODO for ppt: this will still ask the user for the Flow_index, which is redundant
 
 
