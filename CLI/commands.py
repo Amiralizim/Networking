@@ -28,7 +28,7 @@ def login(username, password):
 
 ''' Use this command to choose the client option '''
 @click.command()
-@click.option("--clientchoice", prompt="Please one of the following options to recieve information: privateIps, publicIps, protocol")
+@click.option("--clientchoice", prompt="Please one of the following options to recieve information: privateIps, publicIps, protocolName, webServices")
 def client_option(clientchoice):
     global current_user
     global mode
@@ -42,7 +42,7 @@ def client_option(clientchoice):
             click.secho(", ", fg="blue", nl=False) 
         click.secho(" ", nl=True)
         privateIps_first(None)
-    if(clientchoice == "publicIps"):
+    elif(clientchoice == "publicIps"):
         # get the first range
         click.secho("The first ip range options are: ", fg="green", nl=False)
         mode = "public"
@@ -54,8 +54,19 @@ def client_option(clientchoice):
         # for x in defaults:
         #     click.secho(x,fg="blue")
         privateIps_first(None)
-    if(clientchoice == "protocol"):
-        print("TO BE IMPLEMENTED")
+    elif(clientchoice == "protocolName"):
+        click.secho("Different protocolName options are: ", fg="green", nl=False)
+        defaults = get_protocol_name()
+        for x in defaults:
+            click.secho(str(x), fg="blue", nl=False)
+            click.secho(", ", fg="blue", nl=False) 
+        click.secho(" ", nl=True)
+    elif(clientchoice == "webServices"):
+        defaults = get_webservice_names()
+        for x in defaults:
+            click.secho(str(x), fg="blue", nl=False)
+            click.secho(", ", fg="blue", nl=False) 
+        click.secho(" ", nl=True)
         
 
 ''' Use this command to choose the client option'''

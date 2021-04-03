@@ -389,6 +389,30 @@ def get_dst_ports(srcIP, srcPort, dstIP):
         result.append(x[0])
     return result
 
+def get_protocol_name():
+    """
+    Determines the distinct protocol names
+    """
+    query = ('SELECT DISTINCT ProtocolName FROM Protocol1;')
+    cursor.execute(query)
+    result = []
+    query_result = cursor.fetchall()
+    for x in query_result:
+        result.append(x[0])
+    return result 
+
+def get_webservice_names():
+    """
+    Determines the distinct web service names
+    """
+    query = ('SELECT DISTINCT web_service FROM Protocol2;')
+    cursor.execute(query)
+    result = []
+    query_result = cursor.fetchall()
+    for x in query_result:
+        result.append(x[0])
+    return result 
+
 connection = create_connection('localhost', 'root', 'root')
 cursor = connection.cursor()
 
