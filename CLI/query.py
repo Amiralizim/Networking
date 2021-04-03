@@ -299,6 +299,10 @@ def mode_helper(mode):
     return view_name
 
 def get_first_ip_range(mode):
+    """
+    Determines the different IP ranges of the first three digits based on previous values and mode
+    """
+    # TODO: add handler for unfound 
     query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) FROM {};').format(mode_helper(mode))
     cursor.execute(query)
     result = []
@@ -308,6 +312,10 @@ def get_first_ip_range(mode):
     return result
 
 def get_second_ip_range(mode, ipvalue):
+    """
+    Determines the different IP ranges of the second three digits based on previous values and mode
+    """
+    # TODO: add handler for unfound 
     query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int) FROM {} WHERE CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int)={}').format(mode_helper(mode), ipvalue)
     cursor.execute(query)
     result = []
@@ -317,6 +325,10 @@ def get_second_ip_range(mode, ipvalue):
     return result
 
 def get_third_ip_range(mode, ipvalue):
+    """
+    Determines the different IP ranges of the third three digits based on previous values and mode
+    """
+    # TODO: add handler for unfound 
     query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -2) AS int) FROM {} WHERE CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int)={}').format(mode_helper(mode), ipvalue)
     cursor.execute(query)
     result = []
@@ -326,6 +338,10 @@ def get_third_ip_range(mode, ipvalue):
     return result
 
 def get_fourth_ip_range(mode, ipvalue):
+    """
+    Determines the different IP ranges of the fourth three digits based on previous values and mode
+    """
+    # TODO: add handler for unfound 
     query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -1) AS int) FROM {} WHERE CAST(SUBSTRING_INDEX(srcIP, ".", -2) AS int)={}').format(mode_helper(mode), ipvalue)
     cursor.execute(query)
     result = []
@@ -335,6 +351,10 @@ def get_fourth_ip_range(mode, ipvalue):
     return result
 
 def get_source_ports(srcIP):
+    """
+    Determines the source port based on the provided srcIP
+    """
+    # TODO: add handler for unfound 
     query = ('SELECT distinct srcPort FROM Links WHERE srcIP="{}";').format(str(srcIP))
     cursor.execute(query)
     result = []
@@ -344,6 +364,10 @@ def get_source_ports(srcIP):
     return result
 
 def get_dst_ips(srcIP, srcPort):
+    """
+    Determines the destination IP based on the provided srcIP and srcPort
+    """
+    # TODO: add handler for unfound 
     query = ('SELECT distinct dstIP FROM Links WHERE srcIP="{}" AND srcPort="{}";').format(str(srcIP), str(srcPort))
     cursor.execute(query)
     result = []
@@ -353,6 +377,10 @@ def get_dst_ips(srcIP, srcPort):
     return result
 
 def get_dst_ports(srcIP, srcPort, dstIP):
+    """
+    Determines the destination IP based on the provided srcIP, srcPort and destination IP
+    """
+    # TODO: add handler for unfound 
     query = ('SELECT distinct dstPort FROM Links WHERE srcIP="{}" AND srcPort="{}" AND dstIP="{}";').format(str(srcIP), str(srcPort), str(dstIP))
     cursor.execute(query)
     result = []
