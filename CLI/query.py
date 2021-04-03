@@ -39,6 +39,7 @@ def find_links(sourceip, sourceport, destinationip, destinationport):
     result = ""
     # TODO: add handler for unfound Link_ID
     link_id = ("{}-{}-{}-{}").format(sourceip, sourceport, destinationip, destinationport)
+    print(link_id)
     query = ("SELECT Link_ID FROM Links WHERE Link_ID = \'{}\'; ").format(link_id)
     cursor.execute(query)
 
@@ -286,17 +287,19 @@ def add_annotation(username, flow_id, annotation):
     connection.commit() #WHENEVER MAKING CHANGES TO THE DATABASE REMEMBER TO COMMIT TO THE CONNECTION OTHERWISE THEY WILL NOT BE SAVED
     return count
 
-def get_flow_dates(date1, date2):
-    query = ('SELECT DISTINCT DATE_FORMAT(Flow_Start, "%Y-%m-%d") FROM Flows WHERE Flow_Start between {} and {}').format(date1, date2)
-    cursor.execute(query)
-    result = []
-    query_result = cursor.fetchall()
-    for x in query_result: 
-        result.append(x[0])
-    return result
-    
-def get_flow_times(time1):
-    query = ('SELECT DISTINCT DATE_FORMAT(Flow_Start, "%h:%i:%s") FROM Flows WHERE FLOW_START LIKE "{}%"').format(time1)
+def mode_helper(mode):
+    """
+    Determines if the private_ips or public_ips view has to be used
+    """
+    view_name = ""
+    if(mode == "private"):
+        view_name = "private_ips"
+    elif(mode == "public"):
+        view_name = "public_ips"
+    return view_name
+
+def get_first_ip_range(mode):
+    query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) FROM {};').format(mode_helper(mode))
     cursor.execute(query)
     result = []
     query_result = cursor.fetchall()
@@ -304,8 +307,53 @@ def get_flow_times(time1):
         result.append(x[0])
     return result
 
-def get_flows_based_on_time(date_time):
-    query = ('SELECT Flow_index FROM Flows WHERE Flow_Start Like "{}"').format(date_time)
+def get_second_ip_range(mode, ipvalue):
+    query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int) FROM {} WHERE CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int)={}').format(mode_helper(mode), ipvalue)
+    cursor.execute(query)
+    result = []
+    query_result = cursor.fetchall()
+    for x in query_result:
+        result.append(x[0])
+    return result
+
+def get_third_ip_range(mode, ipvalue):
+    query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -2) AS int) FROM {} WHERE CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int)={}').format(mode_helper(mode), ipvalue)
+    cursor.execute(query)
+    result = []
+    query_result = cursor.fetchall()
+    for x in query_result:
+        result.append(x[0])
+    return result
+
+def get_fourth_ip_range(mode, ipvalue):
+    query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -1) AS int) FROM {} WHERE CAST(SUBSTRING_INDEX(srcIP, ".", -2) AS int)={}').format(mode_helper(mode), ipvalue)
+    cursor.execute(query)
+    result = []
+    query_result = cursor.fetchall()
+    for x in query_result:
+        result.append(x[0])
+    return result
+
+def get_source_ports(srcIP):
+    query = ('SELECT distinct srcPort FROM Links WHERE srcIP="{}";').format(str(srcIP))
+    cursor.execute(query)
+    result = []
+    query_result = cursor.fetchall()
+    for x in query_result:
+        result.append(x[0])
+    return result
+
+def get_dst_ips(srcIP, srcPort):
+    query = ('SELECT distinct dstIP FROM Links WHERE srcIP="{}" AND srcPort="{}";').format(str(srcIP), str(srcPort))
+    cursor.execute(query)
+    result = []
+    query_result = cursor.fetchall()
+    for x in query_result:
+        result.append(x[0])
+    return result
+
+def get_dst_ports(srcIP, srcPort, dstIP):
+    query = ('SELECT distinct dstPort FROM Links WHERE srcIP="{}" AND srcPort="{}" AND dstIP="{}";').format(str(srcIP), str(srcPort), str(dstIP))
     cursor.execute(query)
     result = []
     query_result = cursor.fetchall()

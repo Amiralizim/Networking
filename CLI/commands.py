@@ -4,10 +4,12 @@ from query import *
 '''Mantain this token to keep track is session is admin session or user session'''
 is_admin_session = 0
 current_user = None
-current_date = None
-current_time = None
-current_date_time = None
-
+src_ip = ""
+src_port = ""
+dst_ip = ""
+dst_port = ""
+# this global variable is used for private or public modes
+mode = ""
 
 
 @click.command()
@@ -26,47 +28,139 @@ def login(username, password):
 
 ''' Use this command to choose the client option '''
 @click.command()
-@click.option("--clientchoice", prompt="Please one of the following options to recieve information: time, links, protocol")
+@click.option("--clientchoice", prompt="Please one of the following options to recieve information: privateIps, publicIps, protocol")
 def client_option(clientchoice):
     global current_user
-    if(clientchoice == "time"):
-        date_option(None, None)
+    global mode
+    if(clientchoice == "privateIps"):
+        # get the first range
+        click.secho("The first ip range options are: ", fg="green", nl=False)
+        mode = "private"
+        defaults = get_first_ip_range(mode)
+        for x in defaults:
+            click.secho(str(x), fg="blue", nl=False)
+            click.secho(", ", fg="blue", nl=False) 
+        click.secho(" ", nl=True)
+        privateIps_first(None)
+    if(clientchoice == "publicIps"):
+        # get the first range
+        click.secho("The first ip range options are: ", fg="green", nl=False)
+        mode = "public"
+        defaults = get_first_ip_range(mode)
+        for x in defaults:
+            click.secho(str(x), fg="blue", nl=False)
+            click.secho(", ", fg="blue", nl=False) 
+        click.secho(" ", nl=True)
+        # for x in defaults:
+        #     click.secho(x,fg="blue")
+        privateIps_first(None)
     if(clientchoice == "protocol"):
         print("TO BE IMPLEMENTED")
-    if(clientchoice == "links"):
-        #generate_flow_index("10.200.1.118", "0", "10.200.7.194", "0") # test purpose
-        generate_flow_index(None, None, None, None)
+        
 
-''' Use this command to annotate a particular time '''
+''' Use this command to choose the client option'''
 @click.command()
-@click.option("--time1", prompt="Please enter the first year begining for the range")
-@click.option("--time2", prompt="Please enter the second year end for the range")
-def date_option(time1, time2):
-    global current_date
-    click.secho("The available dates in the system for the provided range are: ")
-    current_date = get_flow_dates(time1, time2)
-    click.secho("Dates: {}".format(current_date), fg = 'yellow')
-    time_option(None)
+@click.option("--firstiprange", prompt="Please choose one of the above options", default = "")
+def privateIps_first(firstiprange):
+    global src_ip
+    global mode
+    src_ip = firstiprange
+    click.secho("The second ip range options are: ", fg="green", nl=False)
+    defaults = get_second_ip_range(mode, firstiprange)
+    for x in defaults:
+        click.secho(str(x), fg="blue", nl=False)
+        click.secho(", ", fg="blue", nl=False)
+    click.secho(" ", nl=True)
+    privateIps_second(None)
+
 
 @click.command()
-@click.option("--time1", prompt="Please select a specific date from the covered range of dates in the system")
-def time_option(time1):
-    global current_time
-    click.secho("The available times in the system for the provided date are: ")
-    current_time = get_flow_times(time1)
-    click.secho("Times: {}".format(current_time), fg='yellow')
-    # concat the specific date and time string
+@click.option("--secondiprange", prompt="Please choose one of the above options", default = "")
+def privateIps_second(secondiprange):
+    global src_ip
+    global mode
+    src_ip = src_ip + "." + secondiprange
+    click.secho("The third ip range options are: ", fg="green", nl=False)
+    defaults = get_third_ip_range(mode, secondiprange)
+    for x in defaults:
+        click.secho(str(x), fg="blue", nl=False)
+        click.secho(", ", fg="blue", nl=False)
+    click.secho(" ", nl=True)
+    privateIps_third(None)
+
+@click.command()
+@click.option("--thirdiprange", prompt="Please choose one of the above options", default = "")
+def privateIps_third(thirdiprange):
+    global src_ip
+    global mode
+    src_ip = src_ip + "." + thirdiprange
+    click.secho("The fourth ip range options are: ", fg="green", nl=False)
+    defaults = get_fourth_ip_range(mode, thirdiprange)
+    for x in defaults:
+        click.secho(str(x), fg="blue", nl=False)
+        click.secho(", ", fg="blue", nl=False)
+    click.secho(" ", nl=True)
+    privateIps_fourth(None)
+
+@click.command()
+@click.option("--fourthiprange", prompt="Please choose one of the above options", default = "")
+def privateIps_fourth(fourthiprange):
+    global src_ip
+    global mode
+    src_ip = src_ip + "." + fourthiprange
+    defaults = get_fourth_ip_range(mode, fourthiprange)
+    for x in defaults:
+        click.secho(str(x), fg="blue", nl=False)
+        click.secho(", ", fg="blue", nl=False)
+    src_port_options = get_source_ports(src_ip)
+    click.secho("The source port options for private ip {} are: ".format(src_ip), fg="green", nl=False)
+    for y in src_port_options:
+        click.secho(str(y), fg="blue", nl=False)
+        click.secho(", ", fg="blue", nl=False)
+    click.secho(" ", nl=True)
+    src_port_selection(None)
+
+
+@click.command()
+@click.option("--sourceport", prompt="Please choose one of the above port options", default="")
+def src_port_selection(sourceport):
+    global src_port
+    global src_ip
+    src_port = sourceport
+    dst_ip_options = get_dst_ips(src_ip, src_port)
+    click.secho("The destination ip options for private source ip {} and source port {} are: ".format(src_ip, src_port), fg="green", nl=False)
+    for x in dst_ip_options:
+        click.secho(str(x), fg="blue", nl=False)
+        click.secho(", ", fg="blue", nl=False)
+    click.secho(" ", nl=True)
+    dst_ip_selection(None)
+
+@click.command()
+@click.option("--dstip", prompt="Please choose one of the above destination ip options", default="")
+def dst_ip_selection(dstip):
+    global src_port
+    global src_ip
+    global dst_ip
+    dst_ip = dstip
+    click.secho("The destination port options for private source ip {}, source port {} and destination ip {} are: ".format(src_ip, src_port, dst_ip), fg="green", nl=False)
+    dst_port_options = get_dst_ports(src_ip, src_port, dst_ip)
+    for x in dst_port_options:
+        click.secho(str(x), fg="blue", nl=False)
+        click.secho(", ", fg="blue", nl=False)
+    click.secho(" ", nl=True)
+    dst_port_selection(None)
+
+@click.command()
+@click.option("--dstport", prompt="Please choose one of the above destination ip options", default="")
+def dst_port_selection(dstport):
+    global src_port
+    global src_ip
+    global dst_port
+    global dst_ip
+    dst_port = dstport
+    click.secho("The destination port options for private source ip {}, source port {}, destination ip {} and destination port {} are: ".format(src_ip, src_port, dst_ip, dst_port), fg="green", nl=False)
+    generate_flow_index(src_ip, dst_ip, src_port, dst_port)
     
-    flow_based_on_time_option(None)
-
-@click.command()
-@click.option("--chosentime", prompt="Please select a specific time from the covered range of times in the system")
-def flow_based_on_time_option(chosentime):
-    global current_date_time
-    current_date_time = current_date + ' ' + chosentime 
-    click.secho("FlowIDs: {}".format(get_flows_based_on_time(current_date_time)))
-    client_option(None)
-
 
 
 ''' Use this command to annotate a particular flowID , a non admin user can annotate'''
@@ -83,11 +177,6 @@ def annotate(flowid, annotation):
 
 
 ''' Use this command to get the source details and destiantion details which can be used to generate our flow_id '''
-@click.command()
-@click.option("--sourceip", prompt="Enter the sourceip", help="Provide the sourceip", default = "10.200.1.118")
-@click.option("--sourceport", prompt="Enter the sourceport", help="Provide the sourceport", default = "0")
-@click.option("--destinationip", prompt="Enter the destinationip", help="Provide the destinationip", default = "10.200.7.194")
-@click.option("--destinationport", prompt="Enter the destinationport", help="Provide the destinationport", default = "0")
 def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
     source = sourceip + ":" + sourceport
     click.secho(source, fg = 'blue')
@@ -107,7 +196,7 @@ def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
 
 ''' Use this command to get the Flow_index of a flow that its information will be provided '''
 @click.command()
-@click.option("--flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index", default = "92612")
+@click.option("--flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index", default = "")
 def display_or_annotate(flow_index):
     choice = ""
     while (choice != "7"):
