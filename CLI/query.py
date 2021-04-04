@@ -37,12 +37,12 @@ def find_links(sourceip, sourceport, destinationip, destinationport):
     """
 
     result = ""
-    # TODO: add handler for unfound Link_ID
     link_id = ("{}-{}-{}-{}").format(sourceip, sourceport, destinationip, destinationport)
-    print(link_id)
-    query = ("SELECT Link_ID FROM Links WHERE Link_ID = \'{}\'; ").format(link_id)
-    cursor.execute(query)
-
+    try:
+        query = ("SELECT Link_ID FROM Links WHERE Link_ID = \'{}\'; ").format(link_id)
+        cursor.execute(query)
+    except Error:
+        return result
     for x in cursor.fetchall():
         #print (x)
         result += x[0]            # x is a tuple type, Link_ID is a string type
@@ -59,10 +59,11 @@ def find_flows(Link_ID):
     """
 
     result = []
-
-    # TODO: no limits for now, may need to add later as it could get enormous
-    query = ("SELECT Flow_index FROM Flows WHERE Link_ID = \'{}\'; ").format(Link_ID)
-    cursor.execute(query)
+    try:
+        query = ("SELECT Flow_index FROM Flows WHERE Link_ID = \'{}\'; ").format(Link_ID)
+        cursor.execute(query)
+    except Error:
+        return result
 
     for x in cursor.fetchall():
         #print (x)
@@ -76,29 +77,14 @@ def display_total(Flow_index):
     input: Flow_index
     output: None (print statements)
     """
-
-    query = ("SELECT * FROM Packets WHERE Flow_index = \'{}\'; ").format(Flow_index)
-    cursor.execute(query)
+    record = []
+    try:
+        query = ("SELECT * FROM Packets WHERE Flow_index = \'{}\'; ").format(Flow_index)
+        cursor.execute(query)
+    except Error:
+        return record
     record = cursor.fetchone()        # use fetchone to fetch only one row, then each attribute from that row would be record[0] [1] and so on
-    
-    click.secho("Flow_index:    ", fg="yellow", nl=False)
-    click.echo(record[0])
-    click.secho("minimum packet size:    ", fg="yellow", nl=False)
-    click.echo(record[1])           # min_ps
-    click.secho("maximum packet size:    ", fg="yellow", nl=False)
-    click.echo(record[2])           # max_ps 
-    click.secho("average packet size:    ", fg="yellow", nl=False)
-    click.echo(record[3])           # avg_ps
-    click.secho("standard deviation packet size:    ", fg="yellow", nl=False)
-    click.echo(record[4])           # std_dev_ps
-    click.secho("minimum packet interarrival time:    ", fg="yellow", nl=False)
-    click.echo(record[5])           # min_piat
-    click.secho("maximum packet interarrival time:    ", fg="yellow", nl=False)
-    click.echo(record[6])           # max_piat
-    click.secho("average packet interarrival time:    ", fg="yellow", nl=False)
-    click.echo(record[7])           # avg_piat
-    click.secho("standard deviation packet interarrival time:    ", fg="yellow", nl=False)
-    click.echo(record[8])           # std_dev_piat
+    return record
     
 def display_forward(Flow_index):
     """
@@ -106,35 +92,14 @@ def display_forward(Flow_index):
     input: Flow_index
     output: None (print statements)
     """
-
-    query = ("SELECT * FROM ForwardFlows WHERE Flow_index = \'{}\'; ").format(Flow_index)
-    cursor.execute(query)
+    record = []
+    try:
+        query = ("SELECT * FROM ForwardFlows WHERE Flow_index = \'{}\'; ").format(Flow_index)
+        cursor.execute(query)
+    except Error:
+        return record
     record = cursor.fetchone()  
-    
-    click.secho("The following attributes are in representing packets in the FORWARD direction!", fg="red")
-
-    click.secho("Flow_index:    ", fg="yellow", nl=False)
-    click.echo(record[0])
-    click.secho("number of packets (F):    ", fg="yellow", nl=False)
-    click.echo(record[1])           # f_pktTotalCount
-    click.secho("total of bytes exchanged (F):     ", fg="yellow", nl=False)
-    click.echo(record[2])           # f_octetTotalCount
-    click.secho("minimum packet size (F):    ", fg="yellow", nl=False)
-    click.echo(record[3])           # f_min_ps
-    click.secho("maximum packet size (F):    ", fg="yellow", nl=False)
-    click.echo(record[4])           # f_max_ps 
-    click.secho("average packet size (F):    ", fg="yellow", nl=False)
-    click.echo(record[5])           # f_avg_ps
-    click.secho("standard deviation packet size (F):    ", fg="yellow", nl=False)
-    click.echo(record[6])           # f_std_dev_ps
-    click.secho("minimum packet interarrival time (F):    ", fg="yellow", nl=False)
-    click.echo(record[7])           # f_min_piat
-    click.secho("maximum packet interarrival time (F):    ", fg="yellow", nl=False)
-    click.echo(record[8])           # f_max_piat
-    click.secho("average packet interarrival time (F):    ", fg="yellow", nl=False)
-    click.echo(record[9])           # f_avg_piat
-    click.secho("standard deviation packet interarrival time (F):    ", fg="yellow", nl=False)
-    click.echo(record[10])          # f_std_dev_piat
+    return record
 
 def display_backward(Flow_index):
     """
@@ -142,35 +107,14 @@ def display_backward(Flow_index):
     input: Flow_index
     output: None (print statements)
     """
-
-    query = ("SELECT * FROM BackwardFlows WHERE Flow_index = \'{}\'; ").format(Flow_index)
-    cursor.execute(query)
+    record = []
+    try: 
+        query = ("SELECT * FROM BackwardFlows WHERE Flow_index = \'{}\'; ").format(Flow_index)
+        cursor.execute(query)
+    except Error:
+        return record 
     record = cursor.fetchone()  
-    
-    click.secho("The following attributes are in representing packets in the BACKWARD direction!", fg="red")
-
-    click.secho("Flow_index:    ", fg="yellow", nl=False)
-    click.echo(record[0])
-    click.secho("number of packets (B):    ", fg="yellow", nl=False)
-    click.echo(record[1])           # b_pktTotalCount
-    click.secho("total of bytes exchanged (B):     ", fg="yellow", nl=False)
-    click.echo(record[2])           # b_octetTotalCount
-    click.secho("minimum packet size (B):    ", fg="yellow", nl=False)
-    click.echo(record[3])           # b_min_ps
-    click.secho("maximum packet size (B):    ", fg="yellow", nl=False)
-    click.echo(record[4])           # b_max_ps 
-    click.secho("average packet size (B):    ", fg="yellow", nl=False)
-    click.echo(record[5])           # b_avg_ps
-    click.secho("standard deviation packet size (B):    ", fg="yellow", nl=False)
-    click.echo(record[6])           # b_std_dev_ps
-    click.secho("minimum packet interarrival time (B):    ", fg="yellow", nl=False)
-    click.echo(record[7])           # b_min_piat
-    click.secho("maximum packet interarrival time (B):    ", fg="yellow", nl=False)
-    click.echo(record[8])           # b_max_piat
-    click.secho("average packet interarrival time (B):    ", fg="yellow", nl=False)
-    click.echo(record[9])           # b_avg_piat
-    click.secho("standard deviation packet interarrival time (B):    ", fg="yellow", nl=False)
-    click.echo(record[10])          # b_std_dev_piat
+    return record
 
 def display_protocol(Flow_index):
     """

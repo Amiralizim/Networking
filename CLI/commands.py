@@ -179,14 +179,13 @@ def dst_ip_selection(dstip):
     dst_port_selection(None)
 
 @click.command()
-@click.option("--dstport", prompt="Please choose one of the above destination ip options")
+@click.option("--dstport", prompt="Please choose one of the above destination port options")
 def dst_port_selection(dstport):
     global src_port
     global src_ip
     global dst_port
     global dst_ip
     dst_port = dstport
-    click.secho("The destination port options for private source ip {}, source port {}, destination ip {} and destination port {} are: ".format(src_ip, src_port, dst_ip, dst_port), fg="green", nl=False)
     generate_flow_index(src_ip, dst_ip, src_port, dst_port)
     
 
@@ -206,14 +205,18 @@ def annotate(flowid, annotation):
 
 ''' Use this command to get the source details and destiantion details which can be used to generate our flow_id '''
 def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
+    Link_ID = find_links(sourceip, sourceport, destinationip, destinationport)
+    if(not Link_ID):
+        click.secho("incorrect value, try again!", fg="red")
+        dst_port_selection(None)
+    Flow_indexes = find_flows(Link_ID)
+    if(not Flow_indexes):
+        click.secho("inccorect value, try again!", fg="red")
+        dst_port_selection(None)
     source = sourceip + ":" + sourceport
     click.secho(source, fg = 'blue')
     destination = destinationip + ":" + destinationport
     click.secho(destination, fg = 'green')
-
-    Link_ID = find_links(sourceip, sourceport, destinationip, destinationport)
-    Flow_indexes = find_flows(Link_ID)  # Flow_index is a [] where each element is a Flow_index (int)
-
     click.secho("The Link_ID is:           ", fg="green", nl=False)
     click.echo(Link_ID)
     click.secho("The found Flow_index are: ", fg="green", nl=False)
@@ -227,28 +230,103 @@ def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
 @click.option("--flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index")
 def display_or_annotate(flow_index):
     choice = ""
-    while (choice != "7"):
+    while (choice != "8"):
         click.secho("(1) check total packet information")
         click.secho("(2) check forward packet information")
         click.secho("(3) check backward packet information")
         click.secho("(4) check protocol packet information")
         click.secho("(5) check flag packet information")
         click.secho("(6) add an annotation")
-        click.secho("(7) exit")
+        click.secho("(7) start from begining")
+        click.secho("(8) exit")
         choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7)')  # choice is string 
 
-        # TODO: implement each of these print functions, for protocol and flag need to check if its from origin 1 or 2 before printing
         if (choice == "1"):
-            display_total(flow_index)
+            record = display_total(flow_index)
+            if not record:
+                click.secho("no data present!", fg="red")
+                dst_port_selection(None)
+            click.secho("Flow_index:    ", fg="yellow", nl=False)
+            click.echo(record[0])
+            click.secho("minimum packet size:    ", fg="yellow", nl=False)
+            click.echo(record[1])           # min_ps
+            click.secho("maximum packet size:    ", fg="yellow", nl=False)
+            click.echo(record[2])           # max_ps 
+            click.secho("average packet size:    ", fg="yellow", nl=False)
+            click.echo(record[3])           # avg_ps
+            click.secho("standard deviation packet size:    ", fg="yellow", nl=False)
+            click.echo(record[4])           # std_dev_ps
+            click.secho("minimum packet interarrival time:    ", fg="yellow", nl=False)
+            click.echo(record[5])           # min_piat
+            click.secho("maximum packet interarrival time:    ", fg="yellow", nl=False)
+            click.echo(record[6])           # max_piat
+            click.secho("average packet interarrival time:    ", fg="yellow", nl=False)
+            click.echo(record[7])           # avg_piat
+            click.secho("standard deviation packet interarrival time:    ", fg="yellow", nl=False)
+            click.echo(record[8])           # std_dev_piat
         elif (choice == "2"):
-            display_forward(flow_index)
+            record = display_forward(flow_index)
+            if not record:
+                click.secho("no data present!", fg="red")
+                dst_ip_selection(None)
+            click.secho("The following attributes are in representing packets in the FORWARD direction!", fg="red")
+            click.secho("Flow_index:    ", fg="yellow", nl=False)
+            click.echo(record[0])
+            click.secho("number of packets (F):    ", fg="yellow", nl=False)
+            click.echo(record[1])           # f_pktTotalCount
+            click.secho("total of bytes exchanged (F):     ", fg="yellow", nl=False)
+            click.echo(record[2])           # f_octetTotalCount
+            click.secho("minimum packet size (F):    ", fg="yellow", nl=False)
+            click.echo(record[3])           # f_min_ps
+            click.secho("maximum packet size (F):    ", fg="yellow", nl=False)
+            click.echo(record[4])           # f_max_ps 
+            click.secho("average packet size (F):    ", fg="yellow", nl=False)
+            click.echo(record[5])           # f_avg_ps
+            click.secho("standard deviation packet size (F):    ", fg="yellow", nl=False)
+            click.echo(record[6])           # f_std_dev_ps
+            click.secho("minimum packet interarrival time (F):    ", fg="yellow", nl=False)
+            click.echo(record[7])           # f_min_piat
+            click.secho("maximum packet interarrival time (F):    ", fg="yellow", nl=False)
+            click.echo(record[8])           # f_max_piat
+            click.secho("average packet interarrival time (F):    ", fg="yellow", nl=False)
+            click.echo(record[9])           # f_avg_piat
+            click.secho("standard deviation packet interarrival time (F):    ", fg="yellow", nl=False)
+            click.echo(record[10])          # f_std_dev_piat
         elif (choice == "3"):
-            display_backward(flow_index)
+            record = display_backward(flow_index)
+            if not record:
+                click.secho("no data present!", fg="red")
+                dst_ip_selection(None)
+            click.secho("The following attributes are in representing packets in the BACKWARD direction!", fg="red")
+            click.secho("Flow_index:    ", fg="yellow", nl=False)
+            click.echo(record[0])
+            click.secho("number of packets (B):    ", fg="yellow", nl=False)
+            click.echo(record[1])           # b_pktTotalCount
+            click.secho("total of bytes exchanged (B):     ", fg="yellow", nl=False)
+            click.echo(record[2])           # b_octetTotalCount
+            click.secho("minimum packet size (B):    ", fg="yellow", nl=False)
+            click.echo(record[3])           # b_min_ps
+            click.secho("maximum packet size (B):    ", fg="yellow", nl=False)
+            click.echo(record[4])           # b_max_ps 
+            click.secho("average packet size (B):    ", fg="yellow", nl=False)
+            click.echo(record[5])           # b_avg_ps
+            click.secho("standard deviation packet size (B):    ", fg="yellow", nl=False)
+            click.echo(record[6])           # b_std_dev_ps
+            click.secho("minimum packet interarrival time (B):    ", fg="yellow", nl=False)
+            click.echo(record[7])           # b_min_piat
+            click.secho("maximum packet interarrival time (B):    ", fg="yellow", nl=False)
+            click.echo(record[8])           # b_max_piat
+            click.secho("average packet interarrival time (B):    ", fg="yellow", nl=False)
+            click.echo(record[9])           # b_avg_piat
+            click.secho("standard deviation packet interarrival time (B):    ", fg="yellow", nl=False)
+            click.echo(record[10])          # b_std_dev_piat
         elif (choice == "4"):
             display_protocol(flow_index)
         elif (choice == "5"):
             display_flag(flow_index)
         # elif (choice == "6"):
         #     annotate(flow_index, None)         # TODO for ppt: this will still ask the user for the Flow_index, which is redundant
+        elif (choice == "7"):
+            client_option(None)
 
 
