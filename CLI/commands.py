@@ -13,8 +13,8 @@ mode = ""
 
 
 @click.command()
-@click.option("--username", prompt="Please enter your username:", help="Provide the username", default = "")
-@click.option("--password", prompt = "Please enter your password:", help = "Provide the password", default = "", hide_input = True)
+@click.option("--username", prompt="Please enter your username", help="Provide the username")
+@click.option("--password", prompt = "Please enter your password", help = "Provide the password", hide_input = True)
 def login(username, password):
     global current_user
     if authenticate(username, password) == True:
@@ -25,6 +25,7 @@ def login(username, password):
         client_option(None)
     else:
         click.secho("ERROR: INCORRECT CREDENTIALS", fg = 'red')
+        login(None, None)
 
 ''' Use this command to choose the client option '''
 @click.command()
@@ -51,8 +52,6 @@ def client_option(clientchoice):
             click.secho(str(x), fg="blue", nl=False)
             click.secho(", ", fg="blue", nl=False) 
         click.secho(" ", nl=True)
-        # for x in defaults:
-        #     click.secho(x,fg="blue")
         privateIps_first(None)
     elif(clientchoice == "protocolName"):
         click.secho("Different protocolName options are: ", fg="green", nl=False)
@@ -71,13 +70,17 @@ def client_option(clientchoice):
 
 ''' Use this command to choose the client option'''
 @click.command()
-@click.option("--firstiprange", prompt="Please choose one of the above options", default = "")
+@click.option("--firstiprange", prompt="Please choose one of the above options")
 def privateIps_first(firstiprange):
     global src_ip
     global mode
+    defaults = get_second_ip_range(mode, firstiprange)
+    # invalid case
+    if(not defaults):
+        click.secho("incorrect value, try again!", fg="red")
+        privateIps_first(None)
     src_ip = firstiprange
     click.secho("The second ip range options are: ", fg="green", nl=False)
-    defaults = get_second_ip_range(mode, firstiprange)
     for x in defaults:
         click.secho(str(x), fg="blue", nl=False)
         click.secho(", ", fg="blue", nl=False)
@@ -86,13 +89,16 @@ def privateIps_first(firstiprange):
 
 
 @click.command()
-@click.option("--secondiprange", prompt="Please choose one of the above options", default = "")
+@click.option("--secondiprange", prompt="Please choose one of the above options")
 def privateIps_second(secondiprange):
     global src_ip
     global mode
+    defaults = get_third_ip_range(mode, secondiprange)
+    if(not defaults):
+        click.secho("incorrect value, try again!", fg="red")
+        privateIps_second(None)
     src_ip = src_ip + "." + secondiprange
     click.secho("The third ip range options are: ", fg="green", nl=False)
-    defaults = get_third_ip_range(mode, secondiprange)
     for x in defaults:
         click.secho(str(x), fg="blue", nl=False)
         click.secho(", ", fg="blue", nl=False)
@@ -100,13 +106,16 @@ def privateIps_second(secondiprange):
     privateIps_third(None)
 
 @click.command()
-@click.option("--thirdiprange", prompt="Please choose one of the above options", default = "")
+@click.option("--thirdiprange", prompt="Please choose one of the above options")
 def privateIps_third(thirdiprange):
     global src_ip
     global mode
+    defaults = get_fourth_ip_range(mode, thirdiprange)
+    if(not defaults):
+        click.secho("incorrect value, try again!", fg="red")
+        privateIps_third(None)
     src_ip = src_ip + "." + thirdiprange
     click.secho("The fourth ip range options are: ", fg="green", nl=False)
-    defaults = get_fourth_ip_range(mode, thirdiprange)
     for x in defaults:
         click.secho(str(x), fg="blue", nl=False)
         click.secho(", ", fg="blue", nl=False)
@@ -114,16 +123,16 @@ def privateIps_third(thirdiprange):
     privateIps_fourth(None)
 
 @click.command()
-@click.option("--fourthiprange", prompt="Please choose one of the above options", default = "")
+@click.option("--fourthiprange", prompt="Please choose one of the above options")
 def privateIps_fourth(fourthiprange):
     global src_ip
     global mode
+    src_ip_t = src_ip + "." + fourthiprange
+    src_port_options = get_source_ports(mode, src_ip_t)
+    if(not src_port_options):
+        click.secho("incorrect value, try again!", fg="red")
+        privateIps_fourth(None)
     src_ip = src_ip + "." + fourthiprange
-    defaults = get_fourth_ip_range(mode, fourthiprange)
-    for x in defaults:
-        click.secho(str(x), fg="blue", nl=False)
-        click.secho(", ", fg="blue", nl=False)
-    src_port_options = get_source_ports(src_ip)
     click.secho("The source port options for private ip {} are: ".format(src_ip), fg="green", nl=False)
     for y in src_port_options:
         click.secho(str(y), fg="blue", nl=False)
@@ -133,12 +142,16 @@ def privateIps_fourth(fourthiprange):
 
 
 @click.command()
-@click.option("--sourceport", prompt="Please choose one of the above port options", default="")
+@click.option("--sourceport", prompt="Please choose one of the above port options")
 def src_port_selection(sourceport):
     global src_port
     global src_ip
+    global mode
     src_port = sourceport
-    dst_ip_options = get_dst_ips(src_ip, src_port)
+    dst_ip_options = get_dst_ips(mode, src_ip, src_port)
+    if(not dst_ip_options):
+        click.secho("incorrect value, try again!", fg="red")
+        src_port_selection(None)
     click.secho("The destination ip options for private source ip {} and source port {} are: ".format(src_ip, src_port), fg="green", nl=False)
     for x in dst_ip_options:
         click.secho(str(x), fg="blue", nl=False)
@@ -147,14 +160,18 @@ def src_port_selection(sourceport):
     dst_ip_selection(None)
 
 @click.command()
-@click.option("--dstip", prompt="Please choose one of the above destination ip options", default="")
+@click.option("--dstip", prompt="Please choose one of the above destination ip options")
 def dst_ip_selection(dstip):
+    global mode
     global src_port
     global src_ip
     global dst_ip
     dst_ip = dstip
+    dst_port_options = get_dst_ports(mode, src_ip, src_port, dst_ip)
+    if(not dst_port_options):
+        click.secho("incorrect value, try again!", fg="red")
+        dst_ip_selection(None)
     click.secho("The destination port options for private source ip {}, source port {} and destination ip {} are: ".format(src_ip, src_port, dst_ip), fg="green", nl=False)
-    dst_port_options = get_dst_ports(src_ip, src_port, dst_ip)
     for x in dst_port_options:
         click.secho(str(x), fg="blue", nl=False)
         click.secho(", ", fg="blue", nl=False)
@@ -162,7 +179,7 @@ def dst_ip_selection(dstip):
     dst_port_selection(None)
 
 @click.command()
-@click.option("--dstport", prompt="Please choose one of the above destination ip options", default="")
+@click.option("--dstport", prompt="Please choose one of the above destination ip options")
 def dst_port_selection(dstport):
     global src_port
     global src_ip
@@ -176,7 +193,7 @@ def dst_port_selection(dstport):
 
 ''' Use this command to annotate a particular flowID , a non admin user can annotate'''
 @click.command()
-@click.option("--flowid", prompt="Please enter the flowid which you wish to annotate", help = "Provide the flowid", default = "")
+@click.option("--flowid", prompt="Please enter the flowid which you wish to annotate", help = "Provide the flowid")
 @click.option("--annotation", prompt = "Please provide the annotation text")
 def annotate(flowid, annotation):
     global current_user
@@ -207,7 +224,7 @@ def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
 
 ''' Use this command to get the Flow_index of a flow that its information will be provided '''
 @click.command()
-@click.option("--flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index", default = "")
+@click.option("--flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index")
 def display_or_annotate(flow_index):
     choice = ""
     while (choice != "7"):
