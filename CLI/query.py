@@ -7,6 +7,12 @@ from mysql.connector import Error
 cursor = None
 connection = None
 
+#Constants
+DUPLICATE_PRIMARY_KEY_ERRNO = 1062
+CLIENT_ORIGIN = 3
+QUERY_ERR = -1
+QUERY_OK = 0
+
 def create_connection(host_name, user_name, user_password):
     #connection = None
     global connection
