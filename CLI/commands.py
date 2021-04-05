@@ -451,7 +451,7 @@ def web_service():
 
 def get_att_agg():
     """
-    Prints options of attribute name and aggregation method for user and return their valid choices
+    Get attribute and aggregation from user
     input: None
     output: attribute name, aggregation method
     """
