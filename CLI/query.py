@@ -483,6 +483,99 @@ def update_flag_table(flag_information):
         print(msg)
         return(QUERY_OK, msg)
 
+def fetchFlowByPN(protocolName):
+    """
+    Determines the totla number of flows with matching protocolName
+    input: protocolName
+    output: total number of flows
+    """
+
+    query = ('SELECT COUNT(*) FROM Protocol1 WHERE ProtocolName = "{}"; ').format(protocolName)
+    cursor.execute(query)
+    query_result = cursor.fetchone()
+    return query_result[0]
+
+def fetchFlowByWeb(web_service):
+    """
+    Determines the total number of flows with matching web_service
+    input: web_service
+    output: total number of flows
+    """
+
+    query = ('SELECT COUNT(*) FROM Protocol2 WHERE web_service = "{}"; ').format(web_service)
+    cursor.execute(query)
+    query_result = cursor.fetchone()
+    return query_result[0]
+
+def fetchInfoByPN(attribute, aggregation, pn):
+    """
+    Determine the max/min/avg of the attribute where flows are sorted by protocol name
+    input: attribute (1,2,3,4 are for min, max, avg, std packet size, 5,6,7,8 are for min, max, avg, std packet interarrival time)
+           aggregation (1: min, 2: max, 3: avg)
+    """
+    attributeName, aggregationName = converter(attribute, aggregation)
+    query = ('WITH temp(flow_index) AS (SELECT flow_index FROM Protocol1 WHERE ProtocolName = "{}") SELECT {}({}), temp.Flow_index FROM temp INNER JOIN Packets on temp.flow_index = Packets.Flow_index;').format(pn, aggregationName, attributeName)
+    cursor.execute(query)
+    query_result = cursor.fetchone()
+    result = []
+    result.append(query_result[0])
+    result.append(query_result[1])
+    click.secho("The %s of %s based on protocol name %s is: " % (aggregationName, attributeName, pn), fg="yellow", nl=False)
+    click.secho("%i" % result[0], fg="black", nl=False)
+    if (aggregation != 3):
+        click.secho(", and its flow_index is ", fg="yellow", nl=False)
+        click.secho("%i" % result[1], fg="black")
+    print("")
+
+def fetchInfoByWeb(attribute, aggregation, ws):
+    """
+    Determine the max/min/avg of the attribute where flows are sorted by web services
+    input: attribute (1,2,3,4 are for min, max, avg, std packet size, 5,6,7,8 are for min, max, avg, std packet interarrival time)
+           aggregation (1: min, 2: max, 3: avg)
+    """
+
+    attributeName, aggregationName = converter(attribute, aggregation)
+    query = ('WITH temp(flow_index) AS (SELECT flow_index FROM Protocol2 WHERE web_service = "{}") SELECT {}({}), temp.Flow_index FROM temp INNER JOIN Packets on temp.flow_index = Packets.Flow_index;').format(ws, aggregationName, attributeName)
+    cursor.execute(query)
+    query_result = cursor.fetchone()
+    result = []
+    result.append(query_result[0])
+    result.append(query_result[1])
+    click.secho("The %s of %s based on web service %s is: " % (aggregationName, attributeName, ws), fg="yellow", nl=False)
+    click.secho("%i" % result[0], fg="black", nl=False)
+    if (aggregation != 3):
+        click.secho(", and its flow_index is ", fg="yellow", nl=False)
+        click.secho("%i" % result[1], fg="black")
+    print("")
+
+def converter(attribute, aggregation):
+    attributeName = ""
+    aggregationName = ""
+    if (attribute == 1):
+        attributeName = "min_ps"
+    elif (attribute == 2):
+        attributeName = "max_ps"
+    elif (attribute == 3):
+        attributeName = "avg_ps"
+    elif (attribute == 4):
+        attributeName = "std_dev_ps"
+    elif (attribute == 5):
+        attributeName = "min_piat"
+    elif (attribute == 6):
+        attributeName = "max_piat"
+    elif (attribute == 7):
+        attributeName = "avg_piat"
+    elif (attribute == 8):
+        attributeName = "std_dev_piat"
+
+    if (aggregation == 1):
+        aggregationName = "MIN"
+    elif (aggregation == 2):
+        aggregationName = "MAX"
+    elif (aggregation == 3):
+        aggregationName = "AVG"
+    
+    return attributeName, aggregationName
 
 
 connection = create_connection('localhost', 'root', 'root')

@@ -54,18 +54,9 @@ def client_option(clientchoice):
         click.secho(" ", nl=True)
         privateIps_first(None)
     elif(clientchoice == "protocolName"):
-        click.secho("Different protocolName options are: ", fg="green", nl=False)
-        defaults = get_protocol_name()
-        for x in defaults:
-            click.secho(str(x), fg="blue", nl=False)
-            click.secho(", ", fg="blue", nl=False) 
-        click.secho(" ", nl=True)
+        protocol()
     elif(clientchoice == "webServices"):
-        defaults = get_webservice_names()
-        for x in defaults:
-            click.secho(str(x), fg="blue", nl=False)
-            click.secho(", ", fg="blue", nl=False) 
-        click.secho(" ", nl=True)
+        web_service()
         
 
 ''' Use this command to choose the client option'''
@@ -405,3 +396,92 @@ def update_flag_information(flow_index):
         update_menu()
 
 
+def protocol():
+    click.secho("Different protocolName options are: ", fg="green", nl=False)
+    defaults = get_protocol_name()
+    for x in defaults:
+        click.secho(str(x), fg="blue", nl=False)
+        click.secho(", ", fg="blue", nl=False) 
+    click.secho(" ", nl=True)
+
+    pn = click.prompt("Enter the protocol name of the flows you wish to inspect upon")
+    while pn not in defaults:
+        click.secho("incorrect value, try again!", fg="red")
+        pn = click.prompt("Enter the protocol name of the flows you wish to inspect upon")
+
+    numFlows = fetchFlowByPN(pn)
+    print("Number of flows matching the protocol name %s is %i" % (pn, numFlows))
+
+    attribute = 0
+    aggregation = 0
+
+    while(1):
+        attribute, aggregation = get_att_agg()
+        if attribute == 9 or aggregation == 4:
+            break
+        fetchInfoByPN(attribute, aggregation, pn)
+    client_option(None)
+
+
+def web_service():
+    defaults = get_webservice_names()
+    for x in defaults:
+        click.secho(str(x), fg="blue", nl=False)
+        click.secho(", ", fg="blue", nl=False) 
+    click.secho(" ", nl=True)
+
+    ws = click.prompt("Enter the web service of the flows you wish to inspect upon")
+    while ws not in defaults: # reiterate until user provides valid web service
+        click.secho("incorrect value, try again!", fg="red")
+        ws = click.prompt("Enter the web service of the flows you wish to inspect upon")
+
+    numFlows = fetchFlowByWeb(ws)
+    print("Number of flows matching the web service %s is %i" % (ws, numFlows))
+        
+    attribute = 0
+    aggregation = 0
+
+    while 1:
+        attribute, aggregation = get_att_agg()
+        if attribute == 9 or aggregation == 4:
+            break
+        fetchInfoByWeb(attribute, aggregation, ws)
+
+    client_option(None)
+
+def get_att_agg():
+    """
+    Prints options of attribute name and aggregation method for user and return their valid choices
+    input: None
+    output: attribute name, aggregation method
+    """
+    attribute = 0
+    aggregation = 0
+    click.secho("Which of the following attributes would you like to check?")
+    click.secho("(1) minimum packet size", fg="blue")
+    click.secho("(2) maximum packet size", fg="blue")
+    click.secho("(3) average packet size", fg="blue")
+    click.secho("(4) standard deviation packet size", fg="blue")
+    click.secho("(5) minimum packet interarrival time", fg="blue")
+    click.secho("(6) maximum packet interarrival time", fg="blue")
+    click.secho("(7) average packet interarrival time", fg="blue")
+    click.secho("(8) standard deviation packet interarrival time", fg="blue")
+    click.secho("(9) exit", fg="blue")
+    attribute = click.prompt("Please enter one of the options (1/2/3/4/5/6/7/8/9)", type=int)
+    while attribute not in range(1,10):
+        click.secho("incorrect value, try again!", fg="red")
+        attribute = click.prompt("Please enter one of the options (1/2/3/4/5/6/7/8/9)", type=int)
+    if attribute == 9:
+        return 9, 4
+
+    click.secho("Which of the following aggregation method would you like to use?")
+    click.secho("(1) minimum", fg="blue")
+    click.secho("(2) maximum", fg="blue")
+    click.secho("(3) average", fg="blue")
+    click.secho("(4) exit", fg="blue")
+    aggregation = click.prompt("Please enter one of the options (1/2/3/4)", type=int)
+    while aggregation not in range(1,5):
+        click.secho("incorrect value, try again!", fg="red")
+        aggregation = click.prompt("Please enter one of the options (1/2/3/4)", type=int)
+
+    return attribute, aggregation
