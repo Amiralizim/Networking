@@ -483,6 +483,108 @@ def update_flag_table(flag_information):
         print(msg)
         return(QUERY_OK, msg)
 
+def update_protocol_table(protocol_information):
+    count_query = 'SELECT COUNT(*) FROM Protocol2 WHERE Flow_index = {};'.format(protocol_information[0])
+    print(count_query)
+    cursor.execute(count_query)
+    result = cursor.fetchall()
+    if result[0][0] == 0:
+        print('Add new row first')
+        main_query = 'INSERT INTO Protocol2(Flow_index, proto, category, application_protocol, web_service) VALUES ({}, {}, \'{}\', \'{}\', \'{}\'); '.format(
+            protocol_information[0], protocol_information[1], protocol_information[2], protocol_information[3], protocol_information[4]
+        )
+        msg = 'Succesfully inserted new row in the table Protocol with Flow_index = {}'.format(protocol_information[0])
+    elif result[0][0] == 1:
+        print('Update existing row')
+        main_query = 'UPDATE Protocol2 SET proto = {}, category = \'{}\', application_protocol = \'{}\', web_service = \'{}\' WHERE Flow_index = {};'.format(
+            protocol_information[1], protocol_information[2], protocol_information[3], protocol_information[4], protocol_information[0]
+        )
+        msg = 'Succesfully updated row in the table Protocol with Flow_index = {}'.format(protocol_information[0])
+    print(main_query)
+    try:
+        cursor.execute(main_query)
+    except mysqlconnector.Error as err:
+        errmsg = ('Unexpected Error: {}').format(err.msg)
+        print(errmsg)
+        return (QUERY_ERR, errmsg)
+    connection.commit()
+    return(QUERY_OK, msg)
+
+def update_forward_flows_table(forward_flow_information):
+    count_query = 'SELECT COUNT(*) FROM ForwardFlows WHERE Flow_index = {}; '.format(forward_flow_information[0])
+    print(count_query)
+    cursor.execute(count_query)
+    result = cursor.fetchall()
+    if result[0][0] == 0:
+        print('Add new row first')
+        main_query = 'INSERT INTO ForwardFlows(Flow_index, f_pktTotalCount, f_octetTotalCount, f_min_ps, f_max_ps, f_avg_ps, f_std_dev_ps, f_min_piat, f_max_piat, f_avg_piat, f_std_dev_piat) VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});'.format(
+            forward_flow_information[0], forward_flow_information[1], forward_flow_information[2], forward_flow_information[3], forward_flow_information[4], forward_flow_information[5], forward_flow_information[6], forward_flow_information[7], forward_flow_information[8], forward_flow_information[9], forward_flow_information[10]
+        )
+        msg = 'Succesfully inserted new row in the forward flows table with Flow_index = {}'.format(forward_flow_information[0])
+    elif result[0][0] == 1:
+        print('Update existing row')
+        main_query = 'UPDATE ForwardFlows SET f_pktTotalCount = {}, f_octetTotalCount = {}, f_min_ps = {}, f_max_ps = {}, f_avg_ps = {}, f_std_dev_ps = {}, f_min_piat = {}, f_max_piat = {}, f_avg_piat = {}, f_std_dev_piat = {} WHERE Flow_index = {};'.format(
+            forward_flow_information[1], forward_flow_information[2], forward_flow_information[3], forward_flow_information[4], forward_flow_information[5], forward_flow_information[6], forward_flow_information[7], forward_flow_information[8], forward_flow_information[9], forward_flow_information[10], forward_flow_information[0]
+        )
+        msg = 'Succesfully updated existing row in the forward flows table with Flow_index = {}'.format(forward_flow_information[0])
+    print(main_query)
+    try:
+        cursor.execute(main_query)
+    except mysqlconnector.Error as err:
+        errmsg = ('Unexpected Error: {}').format(err.msg)
+        print(errmsg)
+        return(QUERY_ERR, errmsg)
+    connection.commit()
+    return(QUERY_OK, msg)
+
+def update_backward_flows_table(backward_flow_information):
+    count_query = 'SELECT COUNT(*) FROM BackwardFlows WHERE Flow_index = {}; '.format(backward_flow_information[0])
+    print(count_query)
+    cursor.execute(count_query)
+    result = cursor.fetchall()
+    if result[0][0] == 0:
+        print('Add new row first')
+        main_query = 'INSERT INTO BackwardFlows(Flow_index, b_pktTotalCount, b_octetTotalCount, b_min_ps, b_max_ps, b_avg_ps, b_std_dev_ps, b_min_piat, b_max_piat, b_avg_piat, b_std_dev_piat) VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {});'.format(
+            backward_flow_information[0], backward_flow_information[1], backward_flow_information[2], backward_flow_information[3], backward_flow_information[4], backward_flow_information[5], backward_flow_information[6], backward_flow_information[7], backward_flow_information[8], backward_flow_information[9], backward_flow_information[10]
+        )
+        msg = 'Succesfully inserted new row in the backward flows table with Flow_index = {}'.format(backward_flow_information[0])
+    elif result[0][0] == 1:
+        print('Update existing row')
+        main_query = 'UPDATE BackwardFlows SET b_pktTotalCount = {}, b_octetTotalCount = {}, b_min_ps = {}, b_max_ps = {}, b_avg_ps = {}, b_std_dev_ps = {}, b_min_piat = {}, b_max_piat = {}, b_avg_piat = {}, b_std_dev_piat = {} WHERE Flow_index = {};'.format(
+            backward_flow_information[1], backward_flow_information[2], backward_flow_information[3], backward_flow_information[4], backward_flow_information[5], backward_flow_information[6], backward_flow_information[7], backward_flow_information[8], backward_flow_information[9], backward_flow_information[10], backward_flow_information[0]
+        )
+        msg = 'Succesfully updated existing row in the backward flows table with Flow_index = {}'.format(backward_flow_information[0])
+    print(main_query)
+    try:
+        cursor.execute(main_query)
+    except mysqlconnector.Error as err:
+        errmsg = ('Unexpected Error: {}').format(err.msg)
+        print(errmsg)
+        return(QUERY_ERR, errmsg)
+    connection.commit()
+    return(QUERY_OK, msg)
+    
+def update_flow_timing_table(date_time_information):
+    count_query = 'SELECT COUNT(*) FROM Flows WHERE Flow_index = {};'.format(date_time_information[0])
+    print(count_query)
+    cursor.execute(count_query)
+    result = cursor.fetchall()
+    if result[0][0] == 0:
+        errmsg = 'This flow does not exist in our system, Please insert the flow first'
+        return (QUERY_ERR, errmsg)
+    elif result[0][0] == 1:
+        main_query = 'UPDATE Flows SET Flow_Start = \'{}\', Flow_Duration = {} WHERE Flow_index = {};'.format(
+            date_time_information[1], date_time_information[2], date_time_information[0]
+        )
+    try:
+        cursor.execute(main_query)
+    except mysqlconnector.Error as err:
+        errmsg = ('Unexpected Error: {}').format(err.msg)
+        return (QUERY_ERR, errmsg)
+    connection.commit()
+    msg = 'Succesfully updated date time information of flow with Flow_index = {}'.format(date_time_information[0])
+    return(QUERY_OK, msg)
+
 def fetchFlowByPN(protocolName):
     """
     Determines the totla number of flows with matching protocolName

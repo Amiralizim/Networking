@@ -354,6 +354,14 @@ def update_menu():
             update_packet_information()
         elif (choice == '6'):
             update_flag_information()
+        elif (choice == '4'):
+            update_protocol_information()
+        elif (choice == '2'):
+            update_forward_flows_information()
+        elif (choice == '3'):
+            update_backward_flows_information()
+        elif (choice == '1'):
+            update_date_time_information()
 
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
@@ -395,6 +403,82 @@ def update_flag_information(flow_index):
         click.secho(result[1], fg = 'green')
         update_menu()
 
+@click.command()
+@click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
+def update_protocol_information(flow_index):
+    proto = click.prompt('Enter the protocol number')
+    category = click.prompt('Enter the protocol category')
+    application_protocol = click.prompt('Enter the application protocol ')
+    web_service = click.prompt('Enter the web service')
+    protocol_information = (flow_index, proto, category, application_protocol, web_service)
+    result = update_protocol_table(protocol_information)
+    if result[0] == -1:
+        click.secho(result[1], fg = 'red')
+        update_protocol_information()
+    else:
+        click.secho(result[1], fg = 'green')
+        update_menu()
+
+@click.command()
+@click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
+def update_forward_flows_information(flow_index):
+    f_pktTotalCount = click.prompt('Enter the total number of packets in the forward direction')
+    f_octetTotalCount = click.prompt('Enter the total number of octet in the forward direection') #TODO: Figure out what this field means and update prompt
+    f_min_ps = click.prompt('Enter the minimum packet size in the fwd direction')
+    f_max_ps = click.prompt('Enter the maximum packet size in the fwd direction')
+    f_avg_ps = click.prompt('Enter the avg packet size in the forward direction')
+    f_std_dev_ps = click.prompt('Enter the standard deviaton of the packet size')
+    f_min_piat = click.prompt('Enter the minimum inter arrival packet time in the forward direction')
+    f_max_piat = click.prompt('Enter the maximum inter arrival packet time in the forward direction')
+    f_avg_piat = click.prompt('Enter the average inter arrival packet time in the forward direction')
+    f_std_dev_piat = click.prompt('Enter the standard deviation of the inter arrival packet size in the forward direction')
+    forward_flow_information = (flow_index, f_pktTotalCount, f_octetTotalCount, f_min_ps, f_max_ps, f_avg_ps, f_std_dev_ps, f_min_piat, f_max_piat, f_avg_piat, f_std_dev_piat)
+    result = update_forward_flows_table(forward_flow_information)
+    if result[0] == -1:
+        click.secho(result[1], fg = 'red')
+        update_forward_flows_information()
+    else:
+        click.secho(result[1], fg = 'green')
+        update_menu()
+
+@click.command()
+@click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
+def update_backward_flows_information(flow_index):
+    b_pktTotalCount = click.prompt('Enter the total number of packets in the backward direction')
+    b_octetTotalCount = click.prompt('Enter the total number of octet in the backward direection') #TODO: Figure out what this field means and update prompt
+    b_min_ps = click.prompt('Enter the minimum packet size in the backward direction')
+    b_max_ps = click.prompt('Enter the maximum packet size in the backward direction')
+    b_avg_ps = click.prompt('Enter the avg packet size in the backward direction')
+    b_std_dev_ps = click.prompt('Enter the standard deviaton of the packet size in the backward direction')
+    b_min_piat = click.prompt('Enter the minimum inter arrival packet time in the backward direction')
+    b_max_piat = click.prompt('Enter the maximum inter arrival packet time in the backward direction')
+    b_avg_piat = click.prompt('Enter the average inter arrival packet time in the backward direction')
+    b_std_dev_piat = click.prompt('Enter the standard deviation of the inter arrival packet size in the backward direction')
+    backward_flow_informtion = (flow_index, b_pktTotalCount, b_octetTotalCount, b_min_ps, b_max_ps, b_avg_ps, b_std_dev_ps, b_min_piat, b_max_piat, b_avg_piat, b_std_dev_piat)
+    result = update_backward_flows_table(backward_flow_informtion)
+    if result[0] == -1:
+        click.secho(result[1], fg = 'red')
+        update_backward_flows_information()
+    else:
+        click.secho(result[1], fg = 'green')
+        update_menu()
+
+@click.command()
+@click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
+def update_date_time_information(flow_index):
+    flow_date = click.prompt('Enter the date of the flow in the format YYYY-MM-DD')
+    flow_time = click.prompt('Enter the time of flow in the format HH:MM:SS')
+    Flow_Start = '{} {}'.format(flow_date, flow_time)
+    flow_Duration = click.prompt('Enter the duration of the flow in milliseconds') 
+    #Leaving protocol out for now, seems like the column is redundant
+    date_time_information = (flow_index, Flow_Start, flow_Duration)
+    result = update_flow_timing_table(date_time_information)
+    if result[0] == -1:
+        click.secho(result[1], fg = 'red')
+        update_date_time_information()
+    else:
+        click.secho(result[1], fg = 'green')
+        update_menu()
 
 def protocol():
     click.secho("Different protocolName options are: ", fg="green", nl=False)
