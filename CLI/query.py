@@ -376,6 +376,109 @@ def get_webservice_names():
         result.append(x[0])
     return result 
 
+# INSERT QUERIES
+def insert_new_flow(srcIP, srcPort, dstIP, dstPort):
+    Link_ID = ('{}-{}-{}-{}').format(srcIP, srcPort, dstIP, dstPort)
+    #Step 1: Insert the Link into the Links table so the FK is satisfied
+    query = 'INSERT INTO Links (Link_ID, srcIP, srcPort, dstIP, dstPort) VALUES(\'{}\', \'{}\', \'{}\', \'{}\', \'{}\');'.format(Link_ID, srcIP, srcPort, dstIP, dstPort)
+    print(query)
+    try:
+        cursor.execute(query)
+    except mysql.connector.Error as err:
+        if (err.errno == DUPLICATE_PRIMARY_KEY_ERRNO):
+            errmsg = 'Error: This link already exists, you can query the link and update its contents instead'
+            return (QUERY_ERR,errmsg)
+        else:
+            errmsg = ('Unexpected Error: {}').format(err.msg)
+            return (QUERY_ERR,errmsg)
+    connection.commit()
+    #Step 2: Get the max Flow_index so we can iterate it further, as this is the PK
+    flow_index_query = 'SELECT MAX(Flow_index) FROM Flows'
+    cursor.execute(flow_index_query)
+    result = cursor.fetchall()
+    flow_index = int(result[0][0])+1
+    #Step 3: Insert just the Flow_index and the Link_ID into the flows table so now all a user has to do is update from the given flow index
+    query = 'INSERT INTO Flows(Flow_index,Link_ID,origin) VALUES ({},\'{}\',{})'.format(flow_index,Link_ID, CLIENT_ORIGIN)
+    cursor.execute(query)
+    connection.commit()
+    msg = ('Success, flow was added with Flow_index: {}').format(flow_index)
+    return (QUERY_OK, msg)
+
+# UPDATE QUERIES
+def update_packet_table(packet_information):
+    query1 = 'SELECT COUNT(*) FROM Packets WHERE Flow_index = {};'.format(packet_information[0]) #Check if the row exists, if it does update otherwise insert
+    print(query1)
+    cursor.execute(query1)
+    result = cursor.fetchall()
+    if result[0][0] == 0:
+        print('add new column first')
+        insert_query = 'INSERT INTO Packets(Flow_index, min_ps, max_ps, avg_ps, std_dev_ps, min_piat, max_piat, avg_piat, std_dev_piat) VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {});'.format(
+            packet_information[0], packet_information[1], packet_information[2], packet_information[3], packet_information[4], packet_information[4], packet_information[5], packet_information[6], packet_information[7], packet_information[8])
+        print(insert_query)
+        try:
+            cursor.execute(insert_query)
+        except mysql.connector.Error as err:
+            errmsg = ('Unexpected error: {}').format(err.msg)
+            return (QUERY_ERR,errmsg)
+        connection.commit()
+        msg = 'Succesfully inserted new row in Packets data with Flow_index = {}'.format(packet_information[0])
+        return (QUERY_OK, msg)
+    elif result[0][0] == 1:
+        update_query = 'UPDATE Packets SET min_ps = {}, max_ps = {}, avg_ps = {}, std_dev_ps = {}, min_piat = {}, max_piat = {}, avg_piat = {}, std_dev_piat = {} WHERE Flow_index = {};'.format(
+            packet_information[1], packet_information[2], packet_information[3], packet_information[4], packet_information[5], packet_information[6], packet_information[7], packet_information[8], packet_information[0]
+        )
+        print(update_query)
+        print('row is already present use update instead')
+        try:
+            cursor.execute(update_query)
+        except mysql.connector.Error as err:
+            errmsg = ('Unexpected error: {}').format(err.msg)
+            return(QUERY_ERR, errmsg)
+        connection.commit()
+        msg = 'Succesfully updated new row in Packets data with Flow_index = {}'.format(packet_information[0])
+        return(QUERY_OK, msg)
+    return
+
+def update_flag_table(flag_information):
+    query1 = 'SELECT COUNT(*) FROM Flags WHERE Flow_index = {};'.format(flag_information[0]) #Check if the row exists, if it does update otherwise insert
+    print(query1)
+    cursor.execute(query1)
+    result = cursor.fetchall()
+    if result[0][0] == 0:
+        print('add new row first')
+        insert_query = 'INSERT INTO Flags(Flow_index, FIN_Flag_Count, SYN_Flag_Count, RST_Flag_Count, PSH_Flag_Count, ACK_Flag_Count, URG_Flag_Count, CWE_Flag_Count, ECE_Flag_Count) VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {});'.format(
+            flag_information[0], flag_information[1], flag_information[2], flag_information[3], flag_information[4], flag_information[5], flag_information[6], flag_information[7], flag_information[8]
+        )
+        print(insert_query)
+        try:
+            cursor.execute(insert_query)
+        except mysql.connector.Error as err:
+            errmsg = ('Unexpected Error: {}').format(err.msg)
+            print(errmsg)
+            return (QUERY_ERR, errmsg)
+        connection.commit()
+        msg = 'Succesfully inserted new row in flags table with Flow_index = {}'.format(flag_information[0])
+        print(msg)
+        return (QUERY_OK, msg)
+    elif result[0][0] == 1:
+        print('update existing row')
+        update_query = 'UPDATE Flags SET FIN_Flag_Count = {}, SYN_Flag_Count = {}, RST_Flag_Count = {}, PSH_Flag_Count = {}, ACK_Flag_Count = {}, URG_Flag_Count = {}, CWE_Flag_Count = {}, ECE_Flag_Count = {} WHERE Flow_index = {}'.format(
+            flag_information[1], flag_information[2], flag_information[3], flag_information[4], flag_information[5], flag_information[6], flag_information[7], flag_information[8], flag_information[0]
+        )
+        print(update_query)
+        try:
+            cursor.execute(update_query)
+        except mysql.connector.Error as err:
+            errmsg = ('Unexpected Error: {}').format(err.msg)
+            print(errmsg)
+            return (QUERY_ERR, errmsg)
+        connection.commit()
+        msg = 'Succesfully updated row in flags table with Flow_index = {}'.format(flag_information[0])
+        print(msg)
+        return(QUERY_OK, msg)
+
+
+
 connection = create_connection('localhost', 'root', 'root')
 cursor = connection.cursor()
 

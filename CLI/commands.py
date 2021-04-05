@@ -329,4 +329,79 @@ def display_or_annotate(flow_index):
         elif (choice == "7"):
             client_option(None)
 
+''' Use this command to insert new data into our database, this can only be done by the admin account '''
+''' This method is used to add minimal required data to flows and links so that the PKs and FKs can be satisfied '''
+@click.command()
+def insert_new_data():
+    #if (is_admin_session == 0):
+        #Non admin can not insert so return back to the client_option menu
+    #    client_option(None)
+    srcIP = click.prompt('Enter the source IP')
+    srcPort = click.prompt('Enter the source port')
+    dstIP = click.prompt('Enter the destination IP')
+    dstPort = click.prompt('Enter the destination Port')
+    result = insert_new_flow(srcIP, srcPort, dstIP, dstPort)
+    if result[0] == -1:
+        click.secho(result[1], fg= 'red')
+        insert_new_data()
+    else:
+        click.secho(result[1], fg= 'green')
+
+@click.command()
+def update_menu():
+    choice = ""
+    while (choice != "7"):
+        click.secho("(1) Update flow timing information", fg='yellow')
+        click.secho("(2) Update flow forward packet information", fg='yellow')
+        click.secho("(3) Update flow backward packet information", fg='yellow')
+        click.secho("(4) Update flow protocol information", fg='yellow')
+        click.secho("(5) Update flow packet information", fg='yellow')
+        click.secho("(6) Update flow flag information", fg='yellow')
+        click.secho("(7) Exit", fg='yellow')
+        choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7)') 
+        if (choice == '5'):
+            update_packet_information()
+        elif (choice == '6'):
+            update_flag_information()
+
+@click.command()
+@click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
+def update_packet_information(flow_index):
+    min_ps = click.prompt('Enter the minmimum packet size: ')
+    max_ps = click.prompt('Enter the maximum packet size: ')
+    avg_ps = click.prompt('Enter the average packet size: ')
+    std_dev_ps = click.prompt('Enter the packet size standard deviation: ')
+    min_piat = click.prompt('Enter the min inter packet arrival time: ')
+    max_piat = click.prompt('Enter the max inter packet arrival time: ')
+    avg_piat = click.prompt('Enter the avg inter packet arrival time: ')
+    std_dev_piat = click.prompt('Enter the standard deviation inter packet arrival time : ')
+    packet_information = (flow_index ,min_ps, max_ps, avg_ps, std_dev_ps, min_piat, max_piat, avg_piat, std_dev_piat)
+    result = update_packet_table(packet_information)
+    if result[0] == -1:
+        click.secho(result[1], fg='red')
+        update_packet_information()
+    else:
+        click.secho(result[1], fg = 'green')
+        update_menu()
+
+@click.command()
+@click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
+def update_flag_information(flow_index):
+    FIN_flag_count = click.prompt('Enter number of times flow had FIN flag bit set to 1: ')
+    SYN_flag_count = click.prompt('Enter number of times flow had SYN flag bit set to 1: ')
+    RST_flag_count = click.prompt('Enter number of times flow had RST flag bit set to 1: ')
+    PSH_flag_count = click.prompt('Enter number of times flow had PSH flag bit set to 1: ')
+    ACK_flag_count = click.prompt('Enter number of times flow had ACK flag bit set to 1: ')
+    URG_flag_count = click.prompt('Enter number of times flow had URG flag bit set to 1: ')
+    CWE_flag_count = click.prompt('Enter number of times flow had CWE flag bit set to 1: ')
+    ECE_flag_count = click.prompt('Enter number of times flow had ECE flag bit set to 1: ')
+    flag_information = (flow_index, FIN_flag_count, SYN_flag_count, RST_flag_count, PSH_flag_count, ACK_flag_count, URG_flag_count, CWE_flag_count, ECE_flag_count)
+    result = update_flag_table(flag_information)
+    if result[0] == -1:
+        click.secho(result[1], fg= 'red')
+        update_flag_information()
+    else:
+        click.secho(result[1], fg = 'green')
+        update_menu()
+
 
