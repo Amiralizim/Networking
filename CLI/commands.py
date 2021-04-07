@@ -494,16 +494,17 @@ def protocol():
         pn = click.prompt("Enter the protocol name of the flows you wish to inspect upon")
 
     numFlows = fetchFlowByPN(pn)
-    print("Number of flows matching the protocol name %s is %i" % (pn, numFlows))
+
+    click.secho("Number of flows matching the Protocol Name %s: " % pn, fg="yellow", nl=False)
+    click.echo(numFlows)
 
     attribute = 0
-    aggregation = 0
 
     while(1):
-        attribute, aggregation = get_att_agg()
-        if attribute == 9 or aggregation == 4:
+        attribute = get_att_agg()
+        if attribute == 9:
             break
-        fetchInfoByPN(attribute, aggregation, pn)
+        fetchInfoByPN(attribute, pn)
     client_option(None)
 
 
@@ -520,27 +521,28 @@ def web_service():
         ws = click.prompt("Enter the web service of the flows you wish to inspect upon")
 
     numFlows = fetchFlowByWeb(ws)
-    print("Number of flows matching the web service %s is %i" % (ws, numFlows))
+    
+    click.secho("Number of flows matching the Web Service %s: " % ws, fg="yellow", nl=False)
+    click.echo(numFlows)
         
     attribute = 0
-    aggregation = 0
 
     while 1:
-        attribute, aggregation = get_att_agg()
-        if attribute == 9 or aggregation == 4:
+        attribute = get_att_agg()
+        if attribute == 9:
             break
-        fetchInfoByWeb(attribute, aggregation, ws)
+        fetchInfoByWeb(attribute, ws)
 
     client_option(None)
 
 def get_att_agg():
     """
-    Get attribute and aggregation from user
+    Get attribute from user
     input: None
-    output: attribute name, aggregation method
+    output: attribute name
     """
     attribute = 0
-    aggregation = 0
+
     click.secho("Which of the following attributes would you like to check?")
     click.secho("(1) minimum packet size", fg="blue")
     click.secho("(2) maximum packet size", fg="blue")
@@ -555,17 +557,5 @@ def get_att_agg():
     while attribute not in range(1,10):
         click.secho("incorrect value, try again!", fg="red")
         attribute = click.prompt("Please enter one of the options (1/2/3/4/5/6/7/8/9)", type=int)
-    if attribute == 9:
-        return 9, 4
 
-    click.secho("Which of the following aggregation method would you like to use?")
-    click.secho("(1) minimum", fg="blue")
-    click.secho("(2) maximum", fg="blue")
-    click.secho("(3) average", fg="blue")
-    click.secho("(4) exit", fg="blue")
-    aggregation = click.prompt("Please enter one of the options (1/2/3/4)", type=int)
-    while aggregation not in range(1,5):
-        click.secho("incorrect value, try again!", fg="red")
-        aggregation = click.prompt("Please enter one of the options (1/2/3/4)", type=int)
-
-    return attribute, aggregation
+    return attribute

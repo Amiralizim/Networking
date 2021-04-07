@@ -609,48 +609,55 @@ def fetchFlowByWeb(web_service):
     query_result = cursor.fetchone()
     return query_result[0]
 
-def fetchInfoByPN(attribute, aggregation, pn):
+def fetchInfoByPN(attribute, pn):
     """
     Determine the max/min/avg of the attribute where flows are sorted by protocol name
     input: attribute (1,2,3,4 are for min, max, avg, std packet size, 5,6,7,8 are for min, max, avg, std packet interarrival time)
-           aggregation (1: min, 2: max, 3: avg)
     """
-    attributeName, aggregationName = converter(attribute, aggregation)
-    query = ('WITH temp(flow_index) AS (SELECT flow_index FROM Protocol1 WHERE ProtocolName = "{}") SELECT {}({}), temp.Flow_index FROM temp INNER JOIN Packets on temp.flow_index = Packets.Flow_index;').format(pn, aggregationName, attributeName)
+    attributeName = converter(attribute)
+    query = ('WITH temp(flow_index) AS (SELECT flow_index FROM Protocol1 WHERE ProtocolName = "{}") SELECT MAX({}), MIN({}), AVG({}), temp.Flow_index FROM temp INNER JOIN Packets on temp.flow_index = Packets.Flow_index;').format(pn, attributeName, attributeName, attributeName)
     cursor.execute(query)
     query_result = cursor.fetchone()
     result = []
     result.append(query_result[0])
     result.append(query_result[1])
-    click.secho("The %s of %s based on protocol name %s is: " % (aggregationName, attributeName, pn), fg="yellow", nl=False)
-    click.secho("%i" % result[0], fg="black", nl=False)
-    if (aggregation != 3):
-        click.secho(", and its flow_index is ", fg="yellow", nl=False)
-        click.secho("%i" % result[1], fg="black")
-    print("")
+    result.append(query_result[2])
 
-def fetchInfoByWeb(attribute, aggregation, ws):
+    click.secho("For the Protocol Name: ", fg="yellow", nl=False)
+    click.echo(pn)
+    click.secho("The MAX(%s):    " % attributeName, fg="yellow", nl=False)
+    click.echo(result[0])
+    click.secho("The MIN(%s):    " % attributeName, fg="yellow", nl=False)
+    click.echo(result[1])
+    click.secho("The AVG(%s):    " % attributeName, fg="yellow", nl=False)
+    click.echo(result[2])
+
+def fetchInfoByWeb(attribute, ws):
     """
     Determine the max/min/avg of the attribute where flows are sorted by web services
     input: attribute (1,2,3,4 are for min, max, avg, std packet size, 5,6,7,8 are for min, max, avg, std packet interarrival time)
-           aggregation (1: min, 2: max, 3: avg)
     """
 
-    attributeName, aggregationName = converter(attribute, aggregation)
-    query = ('WITH temp(flow_index) AS (SELECT flow_index FROM Protocol2 WHERE web_service = "{}") SELECT {}({}), temp.Flow_index FROM temp INNER JOIN Packets on temp.flow_index = Packets.Flow_index;').format(ws, aggregationName, attributeName)
+    attributeName = converter(attribute)
+    query = ('WITH temp(flow_index) AS (SELECT flow_index FROM Protocol2 WHERE web_service = "{}") SELECT MAX({}), MIN({}), AVG({}), temp.Flow_index FROM temp INNER JOIN Packets on temp.flow_index = Packets.Flow_index;').format(ws, attributeName, attributeName, attributeName)
     cursor.execute(query)
     query_result = cursor.fetchone()
     result = []
     result.append(query_result[0])
     result.append(query_result[1])
-    click.secho("The %s of %s based on web service %s is: " % (aggregationName, attributeName, ws), fg="yellow", nl=False)
-    click.secho("%i" % result[0], fg="black", nl=False)
-    if (aggregation != 3):
-        click.secho(", and its flow_index is ", fg="yellow", nl=False)
-        click.secho("%i" % result[1], fg="black")
-    print("")
+    result.append(query_result[2])
+   
+    click.secho("For the Web Service: ", fg="yellow", nl=False)
+    click.echo(ws)
+    click.secho("The MAX(%s):    " % attributeName, fg="yellow", nl=False)
+    click.echo(result[0])
+    click.secho("The MIN(%s):    " % attributeName, fg="yellow", nl=False)
+    click.echo(result[1])
+    click.secho("The AVG(%s):    " % attributeName, fg="yellow", nl=False)
+    click.echo(result[2])
 
-def converter(attribute, aggregation):
+
+def converter(attribute):
     attributeName = ""
     aggregationName = ""
     if (attribute == 1):
@@ -670,14 +677,7 @@ def converter(attribute, aggregation):
     elif (attribute == 8):
         attributeName = "std_dev_piat"
 
-    if (aggregation == 1):
-        aggregationName = "MIN"
-    elif (aggregation == 2):
-        aggregationName = "MAX"
-    elif (aggregation == 3):
-        aggregationName = "AVG"
-    
-    return attributeName, aggregationName
+    return attributeName
 
 
 connection = create_connection('localhost', 'root', 'root')
