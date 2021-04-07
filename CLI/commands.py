@@ -10,6 +10,7 @@ dst_ip = ""
 dst_port = ""
 # this global variable is used for private or public modes
 mode = ""
+current_flow_id = ""
 
 
 @click.command()
@@ -21,7 +22,6 @@ def login(username, password):
         current_user = username
         click.secho("Succesfully logged in!", fg = 'green')
         is_admin_session = get_session_token(username)
-        # annotate(None, None)
         client_option(None)
     else:
         click.secho("ERROR: INCORRECT CREDENTIALS", fg = 'red')
@@ -35,99 +35,34 @@ def client_option(clientchoice):
     global mode
     if(clientchoice == "privateIps"):
         # get the first range
-        click.secho("The first ip range options are: ", fg="green", nl=False)
         mode = "private"
-        defaults = get_first_ip_range(mode)
-        for x in defaults:
-            click.secho(str(x), fg="blue", nl=False)
-            click.secho(", ", fg="blue", nl=False) 
-        click.secho(" ", nl=True)
-        privateIps_first(None)
+        click.secho("example:  10.200.7.194", fg="yellow")
+        src_ip_selection(None)
     elif(clientchoice == "publicIps"):
         # get the first range
-        click.secho("The first ip range options are: ", fg="green", nl=False)
         mode = "public"
-        defaults = get_first_ip_range(mode)
-        for x in defaults:
-            click.secho(str(x), fg="blue", nl=False)
-            click.secho(", ", fg="blue", nl=False) 
-        click.secho(" ", nl=True)
-        privateIps_first(None)
+        click.secho("example:  104.154.126.38", fg="yellow")
+        src_ip_selection(None)
     elif(clientchoice == "protocolName"):
         protocol()
     elif(clientchoice == "webServices"):
         web_service()
-        
-
-''' Use this command to choose the client option'''
-@click.command()
-@click.option("--firstiprange", prompt="Please choose one of the above options")
-def privateIps_first(firstiprange):
-    global src_ip
-    global mode
-    defaults = get_second_ip_range(mode, firstiprange)
-    # invalid case
-    if(not defaults):
-        click.secho("incorrect value, try again!", fg="red")
-        privateIps_first(None)
-    src_ip = firstiprange
-    click.secho("The second ip range options are: ", fg="green", nl=False)
-    for x in defaults:
-        click.secho(str(x), fg="blue", nl=False)
-        click.secho(", ", fg="blue", nl=False)
-    click.secho(" ", nl=True)
-    privateIps_second(None)
-
 
 @click.command()
-@click.option("--secondiprange", prompt="Please choose one of the above options")
-def privateIps_second(secondiprange):
+@click.option("--source_ip", prompt="Please choose a src_ip")
+def src_ip_selection(source_ip):
     global src_ip
     global mode
-    defaults = get_third_ip_range(mode, secondiprange)
-    if(not defaults):
-        click.secho("incorrect value, try again!", fg="red")
-        privateIps_second(None)
-    src_ip = src_ip + "." + secondiprange
-    click.secho("The third ip range options are: ", fg="green", nl=False)
-    for x in defaults:
-        click.secho(str(x), fg="blue", nl=False)
-        click.secho(", ", fg="blue", nl=False)
-    click.secho(" ", nl=True)
-    privateIps_third(None)
-
-@click.command()
-@click.option("--thirdiprange", prompt="Please choose one of the above options")
-def privateIps_third(thirdiprange):
-    global src_ip
-    global mode
-    defaults = get_fourth_ip_range(mode, thirdiprange)
-    if(not defaults):
-        click.secho("incorrect value, try again!", fg="red")
-        privateIps_third(None)
-    src_ip = src_ip + "." + thirdiprange
-    click.secho("The fourth ip range options are: ", fg="green", nl=False)
-    for x in defaults:
-        click.secho(str(x), fg="blue", nl=False)
-        click.secho(", ", fg="blue", nl=False)
-    click.secho(" ", nl=True)
-    privateIps_fourth(None)
-
-@click.command()
-@click.option("--fourthiprange", prompt="Please choose one of the above options")
-def privateIps_fourth(fourthiprange):
-    global src_ip
-    global mode
-    src_ip_t = src_ip + "." + fourthiprange
+    src_ip_t = source_ip
     src_port_options = get_source_ports(mode, src_ip_t)
     if(not src_port_options):
-        click.secho("incorrect value, try again!", fg="red")
-        privateIps_fourth(None)
-    src_ip = src_ip + "." + fourthiprange
-    click.secho("The source port options for private ip {} are: ".format(src_ip), fg="green", nl=False)
+        click.secho("Source ip does not exist in the system!", fg="red")
+        client_option(None)
+    src_ip = source_ip
+    click.secho("The source port options available in the system for private ip {} are: ".format(src_ip), fg="green", nl=False)
     for y in src_port_options:
-        click.secho(str(y), fg="blue", nl=False)
-        click.secho(", ", fg="blue", nl=False)
+        click.secho(str(y), fg="yellow", nl=False)
+        click.secho(", ", fg="yellow", nl=False)
     click.secho(" ", nl=True)
     src_port_selection(None)
 
@@ -145,8 +80,8 @@ def src_port_selection(sourceport):
         src_port_selection(None)
     click.secho("The destination ip options for private source ip {} and source port {} are: ".format(src_ip, src_port), fg="green", nl=False)
     for x in dst_ip_options:
-        click.secho(str(x), fg="blue", nl=False)
-        click.secho(", ", fg="blue", nl=False)
+        click.secho(str(x), fg="yellow", nl=False)
+        click.secho(", ", fg="yellow", nl=False)
     click.secho(" ", nl=True)
     dst_ip_selection(None)
 
@@ -164,8 +99,8 @@ def dst_ip_selection(dstip):
         dst_ip_selection(None)
     click.secho("The destination port options for private source ip {}, source port {} and destination ip {} are: ".format(src_ip, src_port, dst_ip), fg="green", nl=False)
     for x in dst_port_options:
-        click.secho(str(x), fg="blue", nl=False)
-        click.secho(", ", fg="blue", nl=False)
+        click.secho(str(x), fg="yellow", nl=False)
+        click.secho(", ", fg="yellow", nl=False)
     click.secho(" ", nl=True)
     dst_port_selection(None)
 
@@ -183,13 +118,18 @@ def dst_port_selection(dstport):
 
 ''' Use this command to annotate a particular flowID , a non admin user can annotate'''
 @click.command()
-@click.option("--flowid", prompt="Please enter the flowid which you wish to annotate", help = "Provide the flowid")
 @click.option("--annotation", prompt = "Please provide the annotation text")
-def annotate(flowid, annotation):
+def annotate(annotation):
     global current_user
-
-    if add_annotation(current_user, flowid, annotation) == 1:
-        click.secho("Succesfully added in annotation", fg = 'green')
+    global current_flow_id
+    if add_annotation(current_user, current_flow_id, annotation) == 1:
+        click.secho("Succesfully added: ", fg = 'green', nl=False)
+        click.secho(str(annotation), fg = 'green')
+        click.secho("For User: ", fg = 'green', nl=False)
+        click.secho(str(current_user), fg = 'green')
+        click.secho("For FlowID: ", fg = 'green', nl=False)
+        click.secho(str(current_flow_id), fg = 'green')
+        client_option(None)
     else:
         click.secho("Error adding annotation", fg = 'red')
 
@@ -205,7 +145,7 @@ def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
         click.secho("inccorect value, try again!", fg="red")
         dst_port_selection(None)
     source = sourceip + ":" + sourceport
-    click.secho(source, fg = 'blue')
+    click.secho(source, fg = 'yellow')
     destination = destinationip + ":" + destinationport
     click.secho(destination, fg = 'green')
     click.secho("The Link_ID is:           ", fg="green", nl=False)
@@ -220,6 +160,7 @@ def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
 @click.command()
 @click.option("--flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index")
 def display_or_annotate(flow_index):
+    global current_flow_id
     choice = ""
     while (choice != "8"):
         click.secho("(1) check total packet information")
@@ -315,8 +256,9 @@ def display_or_annotate(flow_index):
             display_protocol(flow_index)
         elif (choice == "5"):
             display_flag(flow_index)
-        # elif (choice == "6"):
-        #     annotate(flow_index, None)         # TODO for ppt: this will still ask the user for the Flow_index, which is redundant
+        elif (choice == "6"):
+            current_flow_id = flow_index
+            annotate(None)
         elif (choice == "7"):
             client_option(None)
 
@@ -484,8 +426,8 @@ def protocol():
     click.secho("Different protocolName options are: ", fg="green", nl=False)
     defaults = get_protocol_name()
     for x in defaults:
-        click.secho(str(x), fg="blue", nl=False)
-        click.secho(", ", fg="blue", nl=False) 
+        click.secho(str(x), fg="yellow", nl=False)
+        click.secho(", ", fg="yellow", nl=False) 
     click.secho(" ", nl=True)
 
     pn = click.prompt("Enter the protocol name of the flows you wish to inspect upon")
@@ -511,8 +453,8 @@ def protocol():
 def web_service():
     defaults = get_webservice_names()
     for x in defaults:
-        click.secho(str(x), fg="blue", nl=False)
-        click.secho(", ", fg="blue", nl=False) 
+        click.secho(str(x), fg="yellow", nl=False)
+        click.secho(", ", fg="yellow", nl=False) 
     click.secho(" ", nl=True)
 
     ws = click.prompt("Enter the web service of the flows you wish to inspect upon")
@@ -544,15 +486,15 @@ def get_att_agg():
     attribute = 0
 
     click.secho("Which of the following attributes would you like to check?")
-    click.secho("(1) minimum packet size", fg="blue")
-    click.secho("(2) maximum packet size", fg="blue")
-    click.secho("(3) average packet size", fg="blue")
-    click.secho("(4) standard deviation packet size", fg="blue")
-    click.secho("(5) minimum packet interarrival time", fg="blue")
-    click.secho("(6) maximum packet interarrival time", fg="blue")
-    click.secho("(7) average packet interarrival time", fg="blue")
-    click.secho("(8) standard deviation packet interarrival time", fg="blue")
-    click.secho("(9) exit", fg="blue")
+    click.secho("(1) minimum packet size")
+    click.secho("(2) maximum packet size")
+    click.secho("(3) average packet size")
+    click.secho("(4) standard deviation packet size")
+    click.secho("(5) minimum packet interarrival time")
+    click.secho("(6) maximum packet interarrival time")
+    click.secho("(7) average packet interarrival time")
+    click.secho("(8) standard deviation packet interarrival time")
+    click.secho("(9) exit")
     attribute = click.prompt("Please enter one of the options (1/2/3/4/5/6/7/8/9)", type=int)
     while attribute not in range(1,10):
         click.secho("incorrect value, try again!", fg="red")

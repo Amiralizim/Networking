@@ -316,14 +316,13 @@ CREATE TABLE Flows (Flow_index int,
 					Link_ID varchar(60),
 					Flow_Start varchar(60),
 					Flow_Duration decimal(10),
-					Protocol decimal(2),
 					origin varchar(1),
 					PRIMARY KEY (Flow_index),
 					FOREIGN KEY (Link_ID) REFERENCES Links(Link_ID)
 					);
 
 INSERT INTO Flows
-SELECT Flow_index, Link_ID, flowStart, flowDuration, proto, origin
+SELECT Flow_index, Link_ID, flowStart, flowDuration, origin
 FROM aggregate_dataset;
 
 ------------------------------------------------------------- ForwardFlows -----------------------------------------------------------------------
@@ -473,3 +472,23 @@ CREATE TABLE annotations (flowID INT,
 					comments VARCHAR(1000)
 					); 
 -- Figure out which PKs and FKs to use here, also add this to ER 
+
+------------------------------------------------------------- private_ips VIEW -----------------------------------------------------------------------
+CREATE VIEW private_ips AS 
+SELECT srcIP, srcPort, dstIP, dstPort 
+FROM Links 
+WHERE
+((CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) = 10) OR
+(CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) = 192 AND CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int) = 168) OR
+(CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) = 172 AND 16 < CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int) < 31))
+GROUP BY srcIP, srcPort, dstIP, dstPort;
+
+-------------------------------------------------------------  public_ips VIEW  -----------------------------------------------------------------------
+CREATE VIEW public_ips AS 
+SELECT srcIP, srcPort, dstIP, dstPort 
+FROM Links 
+WHERE
+NOT ((CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) = 10) OR
+(CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) = 192 AND CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int) = 168) OR
+(CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) = 172 AND 16 < CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int) < 31))
+GROUP BY srcIP, srcPort, dstIP, dstPort;

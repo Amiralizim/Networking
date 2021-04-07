@@ -247,66 +247,6 @@ def mode_helper(mode):
         view_name = "public_ips"
     return view_name
 
-def get_first_ip_range(mode):
-    """
-    Determines the different IP ranges of the first three digits based on previous values and mode
-    """
-    result = []
-    try: 
-        query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) FROM {};').format(mode_helper(mode))
-        cursor.execute(query)
-    except Error as e:
-        return result
-    query_result = cursor.fetchall()
-    for x in query_result:
-        result.append(x[0])
-    return result
-
-def get_second_ip_range(mode, ipvalue):
-    """
-    Determines the different IP ranges of the second three digits based on previous values and mode
-    """
-    result = []
-    try:
-        query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int) FROM {} WHERE CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int)={}').format(mode_helper(mode), ipvalue)
-        cursor.execute(query)
-    except Error:
-        return result
-    query_result = cursor.fetchall()
-    for x in query_result:
-        result.append(x[0])
-    return result
-
-def get_third_ip_range(mode, ipvalue):
-    """
-    Determines the different IP ranges of the third three digits based on previous values and mode
-    """
-    result = []
-    try:
-        query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -2) AS int) FROM {} WHERE CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int)={}').format(mode_helper(mode), ipvalue)
-        cursor.execute(query)
-    except Error:
-        return result
-    query_result = cursor.fetchall()
-    for x in query_result:
-        result.append(x[0])
-    return result
-
-def get_fourth_ip_range(mode, ipvalue):
-    """
-    Determines the different IP ranges of the fourth three digits based on previous values and mode
-    """
-    result = []
-    try:
-        query = ('SELECT DISTINCT CAST(SUBSTRING_INDEX(srcIP, ".", -1) AS int) FROM {} WHERE CAST(SUBSTRING_INDEX(srcIP, ".", -2) AS int)={}').format(mode_helper(mode), ipvalue)
-        cursor.execute(query)
-    except Error:
-        return result
-    query_result = cursor.fetchall()
-    for x in query_result:
-        result.append(x[0])
-    return result
-
 def get_source_ports(mode, srcIP):
     """
     Determines the source port based on the provided srcIP
