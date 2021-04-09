@@ -1,4 +1,4 @@
-import commands
+import CLI.commands
 import unittest
 import mock
 from click.testing import CliRunner
