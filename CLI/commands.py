@@ -1,9 +1,14 @@
 import click
 from query import *
+from login import Login
+from link import Link
+from flow import Flow
+from protocol import Protocol
 
 '''Mantain this token to keep track is session is admin session or user session'''
 is_admin_session = 0
 current_user = None
+connection = None
 src_ip = ""
 src_port = ""
 dst_ip = ""
@@ -12,16 +17,34 @@ dst_port = ""
 mode = ""
 current_flow_id = ""
 
+login_instance  = None
+link_instance = None
+flow_instance = None
+protocol_instance = None
+
+def instance_init():
+    global connection
+    global login_instance 
+    global link_instance
+    global flow_instance
+    global protocol_instance
+    login_instance = Login()
+    connection = login_instance.initialize_db()
+    link_instance = Link(connection)
+    flow_instance = Flow(connection)
+    protocol_instance = Protocol(connection)
+
 
 @click.command()
 @click.option("--username", prompt="Please enter your username", help="Provide the username")
 @click.option("--password", prompt = "Please enter your password", help = "Provide the password", hide_input = True)
 def login(username, password):
     global current_user
-    if authenticate(username, password) == True:
+    instance_init()
+    if login_instance.authenticate(username, password) == True:
         current_user = username
         click.secho("Succesfully logged in!", fg = 'green')
-        is_admin_session = get_session_token(username)
+        is_admin_session = login_instance.get_session_token(username)
         client_option(None)
     else:
         click.secho("ERROR: INCORRECT CREDENTIALS", fg = 'red')
@@ -54,7 +77,7 @@ def src_ip_selection(source_ip):
     global src_ip
     global mode
     src_ip_t = source_ip
-    src_port_options = get_source_ports(mode, src_ip_t)
+    src_port_options = link_instance.get_source_ports(mode, src_ip_t)
     if(not src_port_options):
         click.secho("Source ip does not exist in the system!", fg="red")
         client_option(None)
@@ -74,7 +97,7 @@ def src_port_selection(sourceport):
     global src_ip
     global mode
     src_port = sourceport
-    dst_ip_options = get_dst_ips(mode, src_ip, src_port)
+    dst_ip_options = link_instance.get_dst_ips(mode, src_ip, src_port)
     if(not dst_ip_options):
         click.secho("incorrect value, try again!", fg="red")
         src_port_selection(None)
@@ -93,7 +116,7 @@ def dst_ip_selection(dstip):
     global src_ip
     global dst_ip
     dst_ip = dstip
-    dst_port_options = get_dst_ports(mode, src_ip, src_port, dst_ip)
+    dst_port_options = link_instance.get_dst_ports(mode, src_ip, src_port, dst_ip)
     if(not dst_port_options):
         click.secho("incorrect value, try again!", fg="red")
         dst_ip_selection(None)
@@ -122,7 +145,7 @@ def dst_port_selection(dstport):
 def annotate(annotation):
     global current_user
     global current_flow_id
-    if add_annotation(current_user, current_flow_id, annotation) == 1:
+    if login_instance.add_annotation(current_user, current_flow_id, annotation) == 1:
         click.secho("Succesfully added: ", fg = 'green', nl=False)
         click.secho(str(annotation), fg = 'green')
         click.secho("For User: ", fg = 'green', nl=False)
@@ -136,11 +159,11 @@ def annotate(annotation):
 
 ''' Use this command to get the source details and destiantion details which can be used to generate our flow_id '''
 def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
-    Link_ID = find_links(sourceip, sourceport, destinationip, destinationport)
+    Link_ID = link_instance.get_links(sourceip, sourceport, destinationip, destinationport)
     if(not Link_ID):
         click.secho("incorrect value, try again!", fg="red")
         dst_port_selection(None)
-    Flow_indexes = find_flows(Link_ID)
+    Flow_indexes = flow_instance.find_flows(Link_ID)
     if(not Flow_indexes):
         click.secho("inccorect value, try again!", fg="red")
         dst_port_selection(None)
@@ -174,7 +197,7 @@ def display_or_annotate(flow_index):
         choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7)')  # choice is string 
 
         if (choice == "1"):
-            record = display_total(flow_index)
+            record = flow_instance.display_total(flow_index)
             if not record:
                 click.secho("no data present!", fg="red")
                 dst_port_selection(None)
@@ -197,7 +220,7 @@ def display_or_annotate(flow_index):
             click.secho("standard deviation packet interarrival time:    ", fg="yellow", nl=False)
             click.echo(record[8])           # std_dev_piat
         elif (choice == "2"):
-            record = display_forward(flow_index)
+            record = flow_instance.display_forward(flow_index)
             if not record:
                 click.secho("no data present!", fg="red")
                 dst_ip_selection(None)
@@ -225,7 +248,7 @@ def display_or_annotate(flow_index):
             click.secho("standard deviation packet interarrival time (F):    ", fg="yellow", nl=False)
             click.echo(record[10])          # f_std_dev_piat
         elif (choice == "3"):
-            record = display_backward(flow_index)
+            record = flow_instance.display_backward(flow_index)
             if not record:
                 click.secho("no data present!", fg="red")
                 dst_ip_selection(None)
@@ -253,9 +276,9 @@ def display_or_annotate(flow_index):
             click.secho("standard deviation packet interarrival time (B):    ", fg="yellow", nl=False)
             click.echo(record[10])          # b_std_dev_piat
         elif (choice == "4"):
-            display_protocol(flow_index)
+            flow_instance.display_protocol(flow_index)
         elif (choice == "5"):
-            display_flag(flow_index)
+            flow_instance.display_flag(flow_index)
         elif (choice == "6"):
             current_flow_id = flow_index
             annotate(None)
@@ -273,7 +296,7 @@ def insert_new_data():
     srcPort = click.prompt('Enter the source port')
     dstIP = click.prompt('Enter the destination IP')
     dstPort = click.prompt('Enter the destination Port')
-    result = insert_new_flow(srcIP, srcPort, dstIP, dstPort)
+    result = flow_instance.insert_new_flow(srcIP, srcPort, dstIP, dstPort)
     if result[0] == -1:
         click.secho(result[1], fg= 'red')
         insert_new_data()
@@ -317,7 +340,7 @@ def update_packet_information(flow_index):
     avg_piat = click.prompt('Enter the avg inter packet arrival time: ')
     std_dev_piat = click.prompt('Enter the standard deviation inter packet arrival time : ')
     packet_information = (flow_index ,min_ps, max_ps, avg_ps, std_dev_ps, min_piat, max_piat, avg_piat, std_dev_piat)
-    result = update_packet_table(packet_information)
+    result = flow_instance.update_packet_table(packet_information)
     if result[0] == -1:
         click.secho(result[1], fg='red')
         update_packet_information()
@@ -337,7 +360,7 @@ def update_flag_information(flow_index):
     CWE_flag_count = click.prompt('Enter number of times flow had CWE flag bit set to 1: ')
     ECE_flag_count = click.prompt('Enter number of times flow had ECE flag bit set to 1: ')
     flag_information = (flow_index, FIN_flag_count, SYN_flag_count, RST_flag_count, PSH_flag_count, ACK_flag_count, URG_flag_count, CWE_flag_count, ECE_flag_count)
-    result = update_flag_table(flag_information)
+    result = flow_instance.update_flag_table(flag_information)
     if result[0] == -1:
         click.secho(result[1], fg= 'red')
         update_flag_information()
@@ -353,7 +376,7 @@ def update_protocol_information(flow_index):
     application_protocol = click.prompt('Enter the application protocol ')
     web_service = click.prompt('Enter the web service')
     protocol_information = (flow_index, proto, category, application_protocol, web_service)
-    result = update_protocol_table(protocol_information)
+    result = flow_instance.update_protocol_table(protocol_information)
     if result[0] == -1:
         click.secho(result[1], fg = 'red')
         update_protocol_information()
@@ -375,7 +398,7 @@ def update_forward_flows_information(flow_index):
     f_avg_piat = click.prompt('Enter the average inter arrival packet time in the forward direction')
     f_std_dev_piat = click.prompt('Enter the standard deviation of the inter arrival packet size in the forward direction')
     forward_flow_information = (flow_index, f_pktTotalCount, f_octetTotalCount, f_min_ps, f_max_ps, f_avg_ps, f_std_dev_ps, f_min_piat, f_max_piat, f_avg_piat, f_std_dev_piat)
-    result = update_forward_flows_table(forward_flow_information)
+    result = flow_instance.update_forward_flows_table(forward_flow_information)
     if result[0] == -1:
         click.secho(result[1], fg = 'red')
         update_forward_flows_information()
@@ -397,7 +420,7 @@ def update_backward_flows_information(flow_index):
     b_avg_piat = click.prompt('Enter the average inter arrival packet time in the backward direction')
     b_std_dev_piat = click.prompt('Enter the standard deviation of the inter arrival packet size in the backward direction')
     backward_flow_informtion = (flow_index, b_pktTotalCount, b_octetTotalCount, b_min_ps, b_max_ps, b_avg_ps, b_std_dev_ps, b_min_piat, b_max_piat, b_avg_piat, b_std_dev_piat)
-    result = update_backward_flows_table(backward_flow_informtion)
+    result = flow_instance.update_backward_flows_table(backward_flow_informtion)
     if result[0] == -1:
         click.secho(result[1], fg = 'red')
         update_backward_flows_information()
@@ -414,7 +437,7 @@ def update_date_time_information(flow_index):
     flow_Duration = click.prompt('Enter the duration of the flow in milliseconds') 
     #Leaving protocol out for now, seems like the column is redundant
     date_time_information = (flow_index, Flow_Start, flow_Duration)
-    result = update_flow_timing_table(date_time_information)
+    result = flow_instance.update_flow_timing_table(date_time_information)
     if result[0] == -1:
         click.secho(result[1], fg = 'red')
         update_date_time_information()
@@ -424,7 +447,7 @@ def update_date_time_information(flow_index):
 
 def protocol():
     click.secho("Different protocolName options are: ", fg="green", nl=False)
-    defaults = get_protocol_name()
+    defaults = protocol_instance.get_protocol_name()
     for x in defaults:
         click.secho(str(x), fg="yellow", nl=False)
         click.secho(", ", fg="yellow", nl=False) 
@@ -435,7 +458,7 @@ def protocol():
         click.secho("incorrect value, try again!", fg="red")
         pn = click.prompt("Enter the protocol name of the flows you wish to inspect upon")
 
-    numFlows = fetchFlowByPN(pn)
+    numFlows = protocol_instance.fetchFlowByPN(pn)
 
     click.secho("Number of flows matching the Protocol Name %s: " % pn, fg="yellow", nl=False)
     click.echo(numFlows)
@@ -446,12 +469,12 @@ def protocol():
         attribute = get_att_agg()
         if attribute == 9:
             break
-        fetchInfoByPN(attribute, pn)
+        protocol_instance.fetchInfoByPN(attribute, pn)
     client_option(None)
 
 
 def web_service():
-    defaults = get_webservice_names()
+    defaults = protocol_instance.get_webservice_names()
     for x in defaults:
         click.secho(str(x), fg="yellow", nl=False)
         click.secho(", ", fg="yellow", nl=False) 
@@ -462,7 +485,7 @@ def web_service():
         click.secho("incorrect value, try again!", fg="red")
         ws = click.prompt("Enter the web service of the flows you wish to inspect upon")
 
-    numFlows = fetchFlowByWeb(ws)
+    numFlows = protocol_instance.fetchFlowByWeb(ws)
     
     click.secho("Number of flows matching the Web Service %s: " % ws, fg="yellow", nl=False)
     click.echo(numFlows)
@@ -473,7 +496,7 @@ def web_service():
         attribute = get_att_agg()
         if attribute == 9:
             break
-        fetchInfoByWeb(attribute, ws)
+        protocol_instance.fetchInfoByWeb(attribute, ws)
 
     client_option(None)
 
