@@ -1,9 +1,9 @@
 import click
 from query import *
-from login import Login
-from link import Link
-from flow import Flow
-from protocol import Protocol
+from instances.login import Login
+from instances.link import Link
+from instances.flow import Flow
+from instances.protocol import Protocol
 
 '''Mantain this token to keep track is session is admin session or user session'''
 is_admin_session = 0
