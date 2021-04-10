@@ -156,32 +156,32 @@ class Flow:
             click.secho("This flow doesn't have flag information available!", fg="red")
 
     # UPDATE METHODS
-    def insert_new_flow(self, srcIP, srcPort, dstIP, dstPort):
-        Link_ID = ('{}-{}-{}-{}').format(srcIP, srcPort, dstIP, dstPort)
-        #Step 1: Insert the Link into the Links table so the FK is satisfied
-        query = 'INSERT INTO Links (Link_ID, srcIP, srcPort, dstIP, dstPort) VALUES(\'{}\', \'{}\', \'{}\', \'{}\', \'{}\');'.format(Link_ID, srcIP, srcPort, dstIP, dstPort)
-        print(query)
-        try:
-            self.cursor.execute(query)
-        except mysql.connector.Error as err:
-            if (err.errno == self.DUPLICATE_PRIMARY_KEY_ERRNO):
-                errmsg = 'Error: This link already exists, you can query the link and update its contents instead'
-                return (self.QUERY_ERR,errmsg)
-            else:
-                errmsg = ('Unexpected Error: {}').format(err.msg)
-                return (self.QUERY_ERR,errmsg)
-        self.connection.commit()
-        #Step 2: Get the max Flow_index so we can iterate it further, as this is the PK
-        flow_index_query = 'SELECT MAX(Flow_index) FROM Flows'
-        self.cursor.execute(flow_index_query)
-        result = self.cursor.fetchall()
-        flow_index = int(result[0][0])+1
-        #Step 3: Insert just the Flow_index and the Link_ID into the flows table so now all a user has to do is update from the given flow index
-        query = 'INSERT INTO Flows(Flow_index,Link_ID,origin) VALUES ({},\'{}\',{})'.format(flow_index,Link_ID, self.CLIENT_ORIGIN)
-        self.cursor.execute(query)
-        self.connection.commit()
-        msg = ('Success, flow was added with Flow_index: {}').format(flow_index)
-        return (self.QUERY_OK, msg)
+    # def insert_new_flow(self, srcIP, srcPort, dstIP, dstPort):
+    #     Link_ID = ('{}-{}-{}-{}').format(srcIP, srcPort, dstIP, dstPort)
+    #     #Step 1: Insert the Link into the Links table so the FK is satisfied
+    #     query = 'INSERT INTO Links (Link_ID, srcIP, srcPort, dstIP, dstPort) VALUES(\'{}\', \'{}\', \'{}\', \'{}\', \'{}\');'.format(Link_ID, srcIP, srcPort, dstIP, dstPort)
+    #     print(query)
+    #     try:
+    #         self.cursor.execute(query)
+    #     except mysql.connector.Error as err:
+    #         if (err.errno == self.DUPLICATE_PRIMARY_KEY_ERRNO):
+    #             errmsg = 'Error: This link already exists, you can query the link and update its contents instead'
+    #             return (self.QUERY_ERR,errmsg)
+    #         else:
+    #             errmsg = ('Unexpected Error: {}').format(err.msg)
+    #             return (self.QUERY_ERR,errmsg)
+    #     self.connection.commit()
+    #     #Step 2: Get the max Flow_index so we can iterate it further, as this is the PK
+    #     flow_index_query = 'SELECT MAX(Flow_index) FROM Flows'
+    #     self.cursor.execute(flow_index_query)
+    #     result = self.cursor.fetchall()
+    #     flow_index = int(result[0][0])+1
+    #     #Step 3: Insert just the Flow_index and the Link_ID into the flows table so now all a user has to do is update from the given flow index
+    #     query = 'INSERT INTO Flows(Flow_index,Link_ID,origin) VALUES ({},\'{}\',{})'.format(flow_index,Link_ID, self.CLIENT_ORIGIN)
+    #     self.cursor.execute(query)
+    #     self.connection.commit()
+    #     msg = ('Success, flow was added with Flow_index: {}').format(flow_index)
+    #     return (self.QUERY_OK, msg)
 
     # UPDATE QUERIES
     def update_packet_table(self, packet_information):

@@ -1,9 +1,11 @@
 import click
-from query import *
+#from query import *
 from instances.login import Login
 from instances.link import Link
 from instances.flow import Flow
 from instances.protocol import Protocol
+from instances.update import *
+from tables import *
 
 '''Mantain this token to keep track is session is admin session or user session'''
 is_admin_session = 0
@@ -21,6 +23,8 @@ login_instance  = None
 link_instance = None
 flow_instance = None
 protocol_instance = None
+update_instance = None
+tables = None
 
 def instance_init():
     global connection
@@ -28,11 +32,15 @@ def instance_init():
     global link_instance
     global flow_instance
     global protocol_instance
+    global update_instance
+    global tables
     login_instance = Login()
     connection = login_instance.initialize_db()
     link_instance = Link(connection)
     flow_instance = Flow(connection)
     protocol_instance = Protocol(connection)
+    update_instance = Update(connection)
+    tables = Tables()
 
 
 @click.command()
@@ -296,15 +304,17 @@ def insert_new_data():
     srcPort = click.prompt('Enter the source port')
     dstIP = click.prompt('Enter the destination IP')
     dstPort = click.prompt('Enter the destination Port')
-    result = flow_instance.insert_new_flow(srcIP, srcPort, dstIP, dstPort)
+    result = update_instance.insert_new_flow(srcIP, srcPort, dstIP, dstPort)
     if result[0] == -1:
         click.secho(result[1], fg= 'red')
-        insert_new_data()
+        update_menu()
     else:
         click.secho(result[1], fg= 'green')
+        update_menu()
 
 @click.command()
 def update_menu():
+    instance_init()
     choice = ""
     while (choice != "7"):
         click.secho("(1) Update flow timing information", fg='yellow')
@@ -313,7 +323,10 @@ def update_menu():
         click.secho("(4) Update flow protocol information", fg='yellow')
         click.secho("(5) Update flow packet information", fg='yellow')
         click.secho("(6) Update flow flag information", fg='yellow')
-        click.secho("(7) Exit", fg='yellow')
+        click.secho("(7) Insert a new flow into the database", fg = 'yellow')
+        click.secho('(8) Delete data', fg = 'yellow')
+        click.secho('(9) Return to main menu', fg = 'yellow')
+        click.secho("(10) Exit", fg='yellow')
         choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7)') 
         if (choice == '5'):
             update_packet_information()
@@ -327,6 +340,53 @@ def update_menu():
             update_backward_flows_information()
         elif (choice == '1'):
             update_date_time_information()
+        elif (choice == '7'):
+            insert_new_data()
+        elif (choice == '8'):
+            delete_menu()
+        elif (choice == '9'):
+            client_option() #TODO: Replace this with a main menu
+        return
+
+@click.command()
+def delete_menu():
+    choice = ""
+    click.secho("(1) Delete flow forward packet information", fg = 'yellow')
+    click.secho("(2) Delete flow backward packet information", fg = 'yellow')
+    click.secho("(3) Delete flow protocol information", fg = 'yellow')
+    click.secho("(4) Delete flow packet information", fg = 'yellow')
+    click.secho("(5) Delete flow flag information", fg = 'yellow')
+    click.secho('(6) Go back to update menu', fg = 'yellow')
+    click.secho('(7) Go back to main menu', fg = 'yellow')
+    click.secho('(8) Exit', fg = 'yellow')
+    choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7/8)')
+
+    flow_index = click.prompt('Please enter the flow_index you wish to delete the data for') #TODO: Lock this down to an integer
+    if (choice == '1'):
+        delete_result = update_instance.delete_from_table(tables.FORWARD_FLOWS, flow_index)
+    elif (choice == '2'):
+        delete_result = update_instance.delete_from_table(tables.BACKWARD_FLOWS, flow_index)
+    elif (choice == '3'):
+        delete_result = update_instance.delete_from_table(tables.PROTOCOL, flow_index)
+    elif (choice == '4'):
+        delete_result = update_instance.delete_from_table(tables.PACKETS, flow_index)
+    elif (choice == '5'):
+        delete_result = update_instance.delete_from_table(tables.FLAGS, flow_index)
+    elif (choice == '6'):
+        update_menu()
+    elif (choice == '7'):
+        client_option() #TODO: Replace this with a main menu 
+        return
+    elif (choice == '8'):
+        login(None, None)
+    
+    if delete_result.QUERY_OK == -1:
+        click.secho(delete_result.msg, fg = 'red')
+    else:
+        click.secho(delete_result.msg, fg = 'green')
+    
+    update_menu()
+
 
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
@@ -340,17 +400,13 @@ def update_packet_information(flow_index):
     avg_piat = click.prompt('Enter the avg inter packet arrival time: ')
     std_dev_piat = click.prompt('Enter the standard deviation inter packet arrival time : ')
     packet_information = (flow_index ,min_ps, max_ps, avg_ps, std_dev_ps, min_piat, max_piat, avg_piat, std_dev_piat)
-    result = flow_instance.update_packet_table(packet_information)
-    if result[0] == -1:
-        click.secho(result[1], fg='red')
-        update_packet_information()
-    else:
-        click.secho(result[1], fg = 'green')
-        update_menu()
+    update_result = update_instance.update_table(tables.PACKETS, packet_information)
+    display_update_result(update_result)
 
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
 def update_flag_information(flow_index):
+    click.secho('NOTE: THE MAXIMUM VALUE THAT CAN BE SET TO A FLAG COLUMN IS 9', fg = 'red')
     FIN_flag_count = click.prompt('Enter number of times flow had FIN flag bit set to 1: ')
     SYN_flag_count = click.prompt('Enter number of times flow had SYN flag bit set to 1: ')
     RST_flag_count = click.prompt('Enter number of times flow had RST flag bit set to 1: ')
@@ -360,13 +416,8 @@ def update_flag_information(flow_index):
     CWE_flag_count = click.prompt('Enter number of times flow had CWE flag bit set to 1: ')
     ECE_flag_count = click.prompt('Enter number of times flow had ECE flag bit set to 1: ')
     flag_information = (flow_index, FIN_flag_count, SYN_flag_count, RST_flag_count, PSH_flag_count, ACK_flag_count, URG_flag_count, CWE_flag_count, ECE_flag_count)
-    result = flow_instance.update_flag_table(flag_information)
-    if result[0] == -1:
-        click.secho(result[1], fg= 'red')
-        update_flag_information()
-    else:
-        click.secho(result[1], fg = 'green')
-        update_menu()
+    update_result = update_instance.update_table(tables.FLAGS, flag_information)
+    display_update_result(update_result)
 
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
@@ -376,13 +427,8 @@ def update_protocol_information(flow_index):
     application_protocol = click.prompt('Enter the application protocol ')
     web_service = click.prompt('Enter the web service')
     protocol_information = (flow_index, proto, category, application_protocol, web_service)
-    result = flow_instance.update_protocol_table(protocol_information)
-    if result[0] == -1:
-        click.secho(result[1], fg = 'red')
-        update_protocol_information()
-    else:
-        click.secho(result[1], fg = 'green')
-        update_menu()
+    update_result = update_instance.update_table(tables.PROTOCOL, protocol_information)
+    display_update_result(update_result)
 
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
@@ -398,13 +444,8 @@ def update_forward_flows_information(flow_index):
     f_avg_piat = click.prompt('Enter the average inter arrival packet time in the forward direction')
     f_std_dev_piat = click.prompt('Enter the standard deviation of the inter arrival packet size in the forward direction')
     forward_flow_information = (flow_index, f_pktTotalCount, f_octetTotalCount, f_min_ps, f_max_ps, f_avg_ps, f_std_dev_ps, f_min_piat, f_max_piat, f_avg_piat, f_std_dev_piat)
-    result = flow_instance.update_forward_flows_table(forward_flow_information)
-    if result[0] == -1:
-        click.secho(result[1], fg = 'red')
-        update_forward_flows_information()
-    else:
-        click.secho(result[1], fg = 'green')
-        update_menu()
+    update_result = update_instance.update_table(tables.FORWARD_FLOWS, forward_flow_information)
+    display_update_result(update_result)
 
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
@@ -420,13 +461,8 @@ def update_backward_flows_information(flow_index):
     b_avg_piat = click.prompt('Enter the average inter arrival packet time in the backward direction')
     b_std_dev_piat = click.prompt('Enter the standard deviation of the inter arrival packet size in the backward direction')
     backward_flow_informtion = (flow_index, b_pktTotalCount, b_octetTotalCount, b_min_ps, b_max_ps, b_avg_ps, b_std_dev_ps, b_min_piat, b_max_piat, b_avg_piat, b_std_dev_piat)
-    result = flow_instance.update_backward_flows_table(backward_flow_informtion)
-    if result[0] == -1:
-        click.secho(result[1], fg = 'red')
-        update_backward_flows_information()
-    else:
-        click.secho(result[1], fg = 'green')
-        update_menu()
+    update_result = update_instance.update_table(tables.BACKWARD_FLOWS, backward_flow_informtion)
+    display_update_result(update_result)
 
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
@@ -437,10 +473,10 @@ def update_date_time_information(flow_index):
     flow_Duration = click.prompt('Enter the duration of the flow in milliseconds') 
     #Leaving protocol out for now, seems like the column is redundant
     date_time_information = (flow_index, Flow_Start, flow_Duration)
-    result = flow_instance.update_flow_timing_table(date_time_information)
+    result = update_instance.update_flow_timing_table(date_time_information)
     if result[0] == -1:
         click.secho(result[1], fg = 'red')
-        update_date_time_information()
+        update_menu()
     else:
         click.secho(result[1], fg = 'green')
         update_menu()
@@ -524,3 +560,18 @@ def get_att_agg():
         attribute = click.prompt("Please enter one of the options (1/2/3/4/5/6/7/8/9)", type=int)
 
     return attribute
+
+def display_update_result(update_result):
+    if (update_result.QUERY_OK == -1):
+        click.secho(update_result.msg, fg = 'red')
+        update_menu()
+        return
+    click.secho(update_result.msg, fg = 'green')
+    if update_result.is_new_row == 0:
+        before_msg = 'Row before updating: {}'.format(update_result.row_before)
+        click.secho(before_msg, fg = 'green')
+    after_msg = 'Row after updating: {}'.format(update_result.row_after)
+    click.secho(after_msg, fg = 'green')
+    update_menu()
+
+    
