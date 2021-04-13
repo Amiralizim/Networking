@@ -89,7 +89,10 @@ def main_menu():
         Flow_index = click.prompt('Enter the flow index you wish to annotate')
         comment = click.prompt('Enter annotation message')
         annotation_result = update_instance.insert_annotations(Flow_index, comment)
-        click.secho(annotation_result[0], fg = 'green')
+        if annotation_result[0] != -1:
+            click.secho('Succesfully added annotation', fg = 'green')
+        else:
+            click.secho('Unexpected error, please try again', fg = 'red')
         main_menu()
     else:
         click.secho('You must be an admin to use these features', fg = 'red')
