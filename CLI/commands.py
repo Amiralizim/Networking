@@ -64,7 +64,9 @@ def login(username, password):
 
 @click.command()
 def main_menu():
+    global current_user
     global is_admin_session
+    is_admin_session = login_instance.get_session_token(current_user)
     choice = ""
     click.secho('Welcome to the CLI! Please choose one of the options as mentioned below', fg = 'cyan')
     click.secho('(1) Query Data', fg = 'cyan')
@@ -79,6 +81,7 @@ def main_menu():
     elif choice == '3' and is_admin_session == 1:
         delete_menu()
     elif choice == '4':
+        click.secho('GoodBye!', fg = 'cyan')
         is_admin_session = 0
         login(None, None)
     else:
@@ -228,7 +231,7 @@ def display_or_annotate(flow_index):
         click.secho("(5) check flag packet information")
         click.secho("(6) add an annotation")
         click.secho("(7) start from begining")
-        click.secho("(8) exit")
+        click.secho("(8) exit to main menu")
         choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7)')  # choice is string 
 
         if (choice == "1"):
@@ -319,6 +322,8 @@ def display_or_annotate(flow_index):
             annotate(None)
         elif (choice == "7"):
             client_option(None)
+        elif (choice == '8'):
+            main_menu()
 
 ''' Use this command to insert new data into our database, this can only be done by the admin account '''
 ''' This method is used to add minimal required data to flows and links so that the PKs and FKs can be satisfied '''
@@ -343,37 +348,35 @@ def insert_new_data():
 def update_menu():
     instance_init()
     choice = ""
-    while (choice != "7"):
-        click.secho("(1) Update flow timing information", fg='yellow')
-        click.secho("(2) Update flow forward packet information", fg='yellow')
-        click.secho("(3) Update flow backward packet information", fg='yellow')
-        click.secho("(4) Update flow protocol information", fg='yellow')
-        click.secho("(5) Update flow packet information", fg='yellow')
-        click.secho("(6) Update flow flag information", fg='yellow')
-        click.secho("(7) Insert a new flow into the database", fg = 'yellow')
-        click.secho('(8) Delete data', fg = 'yellow')
-        click.secho('(9) Return to main menu', fg = 'yellow')
-        click.secho("(10) Exit", fg='yellow')
-        choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7)') 
-        if (choice == '5'):
-            update_packet_information()
-        elif (choice == '6'):
-            update_flag_information()
-        elif (choice == '4'):
-            update_protocol_information()
-        elif (choice == '2'):
-            update_forward_flows_information()
-        elif (choice == '3'):
-            update_backward_flows_information()
-        elif (choice == '1'):
-            update_date_time_information()
-        elif (choice == '7'):
-            insert_new_data()
-        elif (choice == '8'):
-            delete_menu()
-        elif (choice == '9'):
-            client_option() #TODO: Replace this with a main menu
-        return
+    click.secho("(1) Update flow timing information", fg='yellow')
+    click.secho("(2) Update flow forward packet information", fg='yellow')
+    click.secho("(3) Update flow backward packet information", fg='yellow')
+    click.secho("(4) Update flow protocol information", fg='yellow')
+    click.secho("(5) Update flow packet information", fg='yellow')
+    click.secho("(6) Update flow flag information", fg='yellow')
+    click.secho("(7) Insert a new flow into the database", fg = 'yellow')
+    click.secho('(8) Delete data', fg = 'yellow')
+    click.secho('(9) Return to main menu', fg = 'yellow')
+    choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7/8/9)') 
+    if (choice == '5'):
+        update_packet_information()
+    elif (choice == '6'):
+        update_flag_information()
+    elif (choice == '4'):
+        update_protocol_information()
+    elif (choice == '2'):
+        update_forward_flows_information()
+    elif (choice == '3'):
+        update_backward_flows_information()
+    elif (choice == '1'):
+        update_date_time_information()
+    elif (choice == '7'):
+        insert_new_data()
+    elif (choice == '8'):
+        delete_menu()
+    elif (choice == '9'):
+        main_menu() #TODO: Replace this with a main menu
+    return
 
 @click.command()
 def delete_menu():
@@ -386,10 +389,11 @@ def delete_menu():
     click.secho("(6) Delete all information related to the flow", fg ='yellow')
     click.secho('(7) Go back to update menu', fg = 'yellow')
     click.secho('(8) Go back to main menu', fg = 'yellow')
-    click.secho('(9) Exit', fg = 'yellow')
     choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7/8)')
 
-    flow_index = click.prompt('Please enter the flow_index you wish to delete the data for') #TODO: Lock this down to an integer
+    if (choice != '8'):
+        flow_index = click.prompt('Please enter the flow_index you wish to delete the data for')
+
     if (choice == '1'):
         delete_result = update_instance.delete_from_table(tables.FORWARD_FLOWS, flow_index)
     elif (choice == '2'):
@@ -405,17 +409,14 @@ def delete_menu():
     elif (choice == '7'):
         update_menu()
     elif (choice == '8'):
-        client_option() #TODO: Replace this with a main menu 
-        return
-    elif (choice == '9'):
-        login(None, None)
+        main_menu()
     
     if delete_result.QUERY_OK == -1:
         click.secho(delete_result.msg, fg = 'red')
     else:
         click.secho(delete_result.msg, fg = 'green')
     
-    update_menu()
+    #update_menu()
 
 
 @click.command()
