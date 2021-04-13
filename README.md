@@ -26,13 +26,18 @@ Then run `python3 datamining/APF_generate.py` to generate the average packets pe
 Lastly, start up your mysql database, and inside the mysql command line run `source tableSetupFull.sql` to set up your database.
 
 ## How to run our CLI
-To run our CLI, simply run `python3 main.py`. Then you will be required to enter your username and password.
+To run our CLI, simply run `python3 CLI/main.py`. Then you will be required to enter your username and password.
 
 ### login
 For admin, enter username: **admin** and password: **password123**
 For user, enter username: **user** and password: **password456**
 ### client option 
 User will be provided with the following client options:
+1. 
+2.
+3.
+4.
+
 
 
 ## Tests:
