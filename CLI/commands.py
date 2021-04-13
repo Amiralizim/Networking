@@ -356,9 +356,10 @@ def delete_menu():
     click.secho("(3) Delete flow protocol information", fg = 'yellow')
     click.secho("(4) Delete flow packet information", fg = 'yellow')
     click.secho("(5) Delete flow flag information", fg = 'yellow')
-    click.secho('(6) Go back to update menu', fg = 'yellow')
-    click.secho('(7) Go back to main menu', fg = 'yellow')
-    click.secho('(8) Exit', fg = 'yellow')
+    click.secho("(6) Delete all information related to the flow", fg ='yellow')
+    click.secho('(7) Go back to update menu', fg = 'yellow')
+    click.secho('(8) Go back to main menu', fg = 'yellow')
+    click.secho('(9) Exit', fg = 'yellow')
     choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7/8)')
 
     flow_index = click.prompt('Please enter the flow_index you wish to delete the data for') #TODO: Lock this down to an integer
@@ -373,11 +374,13 @@ def delete_menu():
     elif (choice == '5'):
         delete_result = update_instance.delete_from_table(tables.FLAGS, flow_index)
     elif (choice == '6'):
-        update_menu()
+        delete_result = update_instance.delete_flow_from_whole_database(flow_index)
     elif (choice == '7'):
+        update_menu()
+    elif (choice == '8'):
         client_option() #TODO: Replace this with a main menu 
         return
-    elif (choice == '8'):
+    elif (choice == '9'):
         login(None, None)
     
     if delete_result.QUERY_OK == -1:

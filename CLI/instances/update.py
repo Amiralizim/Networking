@@ -6,6 +6,7 @@ DUPLICATE_PRIMARY_KEY_ERRNO = 1062
 CLIENT_ORIGIN = 3
 QUERY_ERR = -1
 QUERY_OK = 0
+TABLE_NAMES = ['Flags', 'BackwardFlows', 'ForwardFlows', 'Packets', 'Protocol2', 'annotations', 'Flows'] 
 
 class Update_Result:
     def __init__(self, QUERY_OK, msg, is_new_row, row_before, row_after):
@@ -43,6 +44,43 @@ class Update:
         self.connection.commit()
         msg = 'Succesfully deleted From Table {} data with Flow_id: {}'.format(table_name, Flow_id)
         return Delete_Result(0, msg)
+    
+    def delete_flow_from_whole_database(self, flow_index):
+
+        for x in TABLE_NAMES:
+            delete_result = self.delete_from_table(x, flow_index)
+            if (delete_result.QUERY_OK != QUERY_OK):
+                return Delete_Result(QUERY_ERR, delete_result.msg)
+        
+        msg = 'Succesfully delted all data related to the flow {}'.format(flow_index)
+        return Delete_Result(QUERY_OK, msg)
+        
+        #Once this query is wiped from all other tables , wipe from links
+        # For this we have to get the link_id from flows first as flows acts as bridge between links and flow_index
+        
+        # flows_query = 'SELECT Link_ID FROM Flows WHERE Flow_index = {};'.format(flow_index)
+        # try:
+        #     self.cursor.execute(flows_query)
+        # except mysql.connector.Error as err:
+        #     errmsg = ('Unexpected Error {}').format(err.msg)
+        #     return Delete_Result(QUERY_ERR, errmsg)
+        
+        # flow_query_result = self.cursor.fetchall()
+        # link_id = flows_query_result[0][0]
+        # #Now we can safely delete from Flows
+        # delete_result = self.delete_from_table('Flows',flow_index)
+        # if delete_result.QUERY_OK != QUERY_OK:
+        #     return Delete_Result(QUERY_ERR, errmsg)
+        
+        # #Finally we are good to wipe the link for good
+        # link_delete_query = 'DELETE FROM Links WHERE Link_ID = {};'.format(link_id)
+        # try:
+        #     self.cursor.execute(link_id)
+        # except mysql.connector.Error as err:
+        #     errmsg = ('Unexpected Error {}').format(err.msg)
+        #     return Delete_Result(QUERY_ERR, errmsg)
+        
+        # msg = 'Succesfully wiped flow_index {} from with database along '
     
     def update_table(self, table_name, table_data):
         update_queries = self.get_update_queries(table_name, table_data)
@@ -130,6 +168,7 @@ class Update:
             self.cursor.execute(query)
         except mysql.connector.Error as err:
             if (err.errno == DUPLICATE_PRIMARY_KEY_ERRNO):
+                #TODO: MAKE SURE THE FLOW_INDEX IS RETURNED HERE
                 errmsg = 'Error: This link already exists, you can query the link and update its contents instead'
                 return (QUERY_ERR,errmsg)
             else:
@@ -142,7 +181,7 @@ class Update:
         result = self.cursor.fetchall()
         flow_index = int(result[0][0])+1
         #Step 3: Insert just the Flow_index and the Link_ID into the flows table so now all a user has to do is update from the given flow index
-        query = 'INSERT INTO Flows(Flow_index,Link_ID,origin) VALUES ({},\'{}\',{})'.format(flow_index,Link_ID, 3)
+        query = 'INSERT INTO Flows(Flow_index,Link_ID,origin) VALUES ({},\'{}\',{})'.format(flow_index,Link_ID, CLIENT_ORIGIN)
         self.cursor.execute(query)
         self.connection.commit()
         msg = ('Success, flow was added with Flow_index: {}').format(flow_index)
