@@ -1,4 +1,4 @@
-import CLI.commands
+import commands
 import unittest
 import mock
 from click.testing import CliRunner
@@ -95,18 +95,6 @@ class TestClientRoute(unittest.TestCase):
         )
         generate_flow_index_mocked.assert_called_with(src_ip, dst_ip, src_port, dst_port)
         print(bcolors.OKGREEN  + "Dst port test passed" + u' \u2713' + bcolors.ENDC)
-
-    @mock.patch('commands.find_flows')
-    @mock.patch('commands.display_or_annotate')
-    def test_generate_flow_index(self, display_or_annotate_mocked, find_flows_mocked):
-        src_ip = "10.200.7.194"
-        src_port = "32827"
-        dst_ip = "179.1.4.230"
-        dst_port = "443"
-        link_id = src_ip+'-'+src_port+'-'+dst_ip+'-'+dst_port
-        commands.generate_flow_index(src_ip, dst_ip, src_port, dst_port)
-        find_flows_mocked.assert_called_with(link_id)
-        print(bcolors.OKGREEN  + "Flow index test passed" + u' \u2713' + bcolors.ENDC)
 
 
     
