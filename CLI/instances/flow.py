@@ -154,3 +154,10 @@ class Flow:
             click.echo(record[8])           # ECE_Flag_Count
         elif (record[0] == "2"):
             click.secho("This flow doesn't have flag information available!", fg="red")
+
+    def display_annotations(self, Flow_index):
+        query = 'SELECT comments FROM annotations WHERE Flow_index = {};'.format(Flow_index)
+        self.cursor.execute(query)
+        results = self.cursor.fetchall()
+        for x in results:
+            click.secho(x[0], fg = 'magenta')

@@ -72,18 +72,25 @@ def main_menu():
     click.secho('(1) Query Data', fg = 'cyan')
     click.secho('(2) Insert and Update Data', fg = 'cyan')
     click.secho('(3) Delete Data', fg = 'cyan') 
-    click.secho('(4) Logout', fg = 'cyan')
-    choice = click.prompt('Enter one of the options displayed above (1/2/3/4)')
+    click.secho('(4) Annotate', fg = 'cyan')
+    click.secho('(5) Logout', fg = 'cyan')
+    choice = click.prompt('Enter one of the options displayed above (1/2/3/4/5)')
     if choice == '1':
         client_option(None)
     elif choice == '2' and is_admin_session == 1:
         update_menu()
     elif choice == '3' and is_admin_session == 1:
         delete_menu()
-    elif choice == '4':
+    elif choice == '5':
         click.secho('GoodBye!', fg = 'cyan')
         is_admin_session = 0
         login(None, None)
+    elif choice == '4':
+        Flow_index = click.prompt('Enter the flow index you wish to annotate')
+        comment = click.prompt('Enter annotation message')
+        annotation_result = update_instance.insert_annotations(Flow_index, comment)
+        click.secho(annotation_result[0], fg = 'green')
+        main_menu()
     else:
         click.secho('You must be an admin to use these features', fg = 'red')
         main_menu()
@@ -380,6 +387,8 @@ def update_menu():
 
 @click.command()
 def delete_menu():
+    flow_index = click.prompt('Please enter the flow_index you wish to delete the data for')
+    flow_instance.display_annotations(flow_index)
     choice = ""
     click.secho("(1) Delete flow forward packet information", fg = 'yellow')
     click.secho("(2) Delete flow backward packet information", fg = 'yellow')
@@ -391,8 +400,9 @@ def delete_menu():
     click.secho('(8) Go back to main menu', fg = 'yellow')
     choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7/8)')
 
-    if (choice != '8'):
-        flow_index = click.prompt('Please enter the flow_index you wish to delete the data for')
+    # if (choice != '8'):
+    #     flow_index = click.prompt('Please enter the flow_index you wish to delete the data for')
+    #     flow_instance.display_annotations(flow_index)
 
     if (choice == '1'):
         delete_result = update_instance.delete_from_table(tables.FORWARD_FLOWS, flow_index)
@@ -422,6 +432,7 @@ def delete_menu():
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
 def update_packet_information(flow_index):
+    flow_instance.display_annotations(flow_index)
     min_ps = click.prompt('Enter the minmimum packet size: ')
     max_ps = click.prompt('Enter the maximum packet size: ')
     avg_ps = click.prompt('Enter the average packet size: ')
@@ -437,6 +448,7 @@ def update_packet_information(flow_index):
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
 def update_flag_information(flow_index):
+    flow_instance.display_annotations(flow_index)
     click.secho('NOTE: THE MAXIMUM VALUE THAT CAN BE SET TO A FLAG COLUMN IS 9', fg = 'red')
     FIN_flag_count = click.prompt('Enter number of times flow had FIN flag bit set to 1: ')
     SYN_flag_count = click.prompt('Enter number of times flow had SYN flag bit set to 1: ')
@@ -453,6 +465,7 @@ def update_flag_information(flow_index):
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
 def update_protocol_information(flow_index):
+    flow_instance.display_annotations(flow_index)
     proto = click.prompt('Enter the protocol number')
     category = click.prompt('Enter the protocol category')
     application_protocol = click.prompt('Enter the application protocol ')
@@ -464,6 +477,7 @@ def update_protocol_information(flow_index):
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
 def update_forward_flows_information(flow_index):
+    flow_instance.display_annotations(flow_index)
     f_pktTotalCount = click.prompt('Enter the total number of packets in the forward direction')
     f_octetTotalCount = click.prompt('Enter the total number of octet in the forward direection') #TODO: Figure out what this field means and update prompt
     f_min_ps = click.prompt('Enter the minimum packet size in the fwd direction')
@@ -481,6 +495,7 @@ def update_forward_flows_information(flow_index):
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
 def update_backward_flows_information(flow_index):
+    flow_instance.display_annotations(flow_index)
     b_pktTotalCount = click.prompt('Enter the total number of packets in the backward direction')
     b_octetTotalCount = click.prompt('Enter the total number of octet in the backward direection') #TODO: Figure out what this field means and update prompt
     b_min_ps = click.prompt('Enter the minimum packet size in the backward direction')
@@ -498,6 +513,7 @@ def update_backward_flows_information(flow_index):
 @click.command()
 @click.option("--flow_index", prompt = "Enter the flow index you wish to update", default = "")
 def update_date_time_information(flow_index):
+    flow_instance.display_annotations(flow_index)
     flow_date = click.prompt('Enter the date of the flow in the format YYYY-MM-DD')
     flow_time = click.prompt('Enter the time of flow in the format HH:MM:SS')
     Flow_Start = '{} {}'.format(flow_date, flow_time)

@@ -189,3 +189,13 @@ class Update:
         msg = 'Succesfully updated date time information of flow with Flow_index = {}'.format(date_time_information[0])
         return(QUERY_OK, msg)
     
+    def insert_annotations(self, Flow_index, comments):
+        insert_query = 'INSERT INTO annotations(Flow_index, comments) VALUES({}, \'{}\')'.format(Flow_index, comments)
+        try:
+            self.cursor.execute(insert_query)
+        except mysql.connector.Error as err:
+            errmsg = ('Unexpected error: {}').format(err.msg)
+            return (QUERY_ERR, errmsg)
+        self.connection.commit()
+        msg = 'Succesfully added annotation for flow_index = {}'.format(Flow_index)
+        return (QUERY_OK, msg)
