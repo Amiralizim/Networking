@@ -22,7 +22,7 @@ pip3 install matplotlib
 Before running our code, there are a few python and sql scripts that needs to be run in the following order:
 **make sure you are at the Networking_dataset directory** 
 First run `python3 21-Network-Traffic/extract.py` to change formatting of the data csv files.
-Then run `python3 datamining/APF_generate.py` to generate the average packets per flow for data mining purpose.
+Then run `python3 CLI/datamining/APF_generate.py` to generate the average packets per flow for data mining purpose.
 Lastly, start up your mysql database, and inside the mysql command line run `source tableSetupFull.sql` to set up your database.
 
 ## How to run our CLI
