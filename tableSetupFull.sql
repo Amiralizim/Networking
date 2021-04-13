@@ -1,5 +1,23 @@
--- ------------------------------------------------
+DROP DATABASE IF EXISTS Networking;
+CREATE DATABASE Networking;
+USE Networking;
+DROP VIEW IF EXISTS public_ips;
+DROP VIEW IF EXISTS private_ips;
+DROP TABLE IF EXISTS annotations;
+DROP TABLE IF EXISTS userinfo;
+DROP TABLE IF EXISTS Protocol2;
+DROP TABLE IF EXISTS Protocol1;
+DROP TABLE IF EXISTS Flags;
+DROP TABLE IF EXISTS Packets;
+DROP TABLE IF EXISTS BackwardFlows;
+DROP TABLE IF EXISTS ForwardFlows;
+DROP TABLE IF EXISTS Flows;
+DROP TABLE IF EXISTS Links;
+DROP TABLE IF EXISTS aggregate_dataset;
+DROP TABLE IF EXISTS Dataset2;
+DROP TABLE IF EXISTS Dataset1;
 
+-- ------------------------------------------------
 -- Networking Database
 -- ip-network-traffic-flows-labeled-with-87-apps -------------------------------------------------------------------
 create table Dataset1 (
@@ -94,8 +112,7 @@ create table Dataset1 (
 load data infile '/var/lib/mysql-files/21-Network-Traffic/Dataset-Unicauca-Version2-87Atts.csv' ignore into table Dataset1
 		fields terminated by ','
 		enclosed by '"'
-		lines terminated by '\n'
-		ignore 3477296 lines;
+		lines terminated by '\n';
 
 -- parse the data in the table
 -- This includes: 
@@ -157,7 +174,7 @@ create table Dataset2 (
 	 b_min_ps decimal(5),  
 	 b_max_ps decimal(5),  
 	 b_avg_ps decimal(5),  
-	 b_std_dev_ps decimal(5), 
+	 b_std_dev_ps decimal(6), 
 	 b_flowStart decimal(10), 
 	 b_flowEnd decimal(10), 
 	 b_flowDuration decimal(12),  
@@ -173,8 +190,7 @@ create table Dataset2 (
 load data infile '/var/lib/mysql-files/21-Network-Traffic/Unicauca-dataset-April-June-2019-Network-flows.csv' ignore into table Dataset2
 		fields terminated by ','
 		enclosed by '"'
-		lines terminated by '\n'
-		ignore 2604839 lines;
+		lines terminated by '\n';
 
 -- parse the data in the table
 -- This includes: 
@@ -203,7 +219,6 @@ UPDATE Dataset2 d2
 
 ------------------------------------------------------------- aggregate dataset -----------------------------------------------------------------------
 -- this table combines both datasets and produce a unqiue id: Flow_index 
-DROP TABLE IF EXISTS aggregate_dataset;
 
 CREATE TABLE aggregate_dataset (
 	 Flow_index int NOT NULL AUTO_INCREMENT,
@@ -237,7 +252,7 @@ CREATE TABLE aggregate_dataset (
 	 b_min_ps decimal(5),  
 	 b_max_ps decimal(5),  
 	 b_avg_ps decimal(5),  
-	 b_std_dev_ps decimal(5), 
+	 b_std_dev_ps decimal(6), 
 	 b_min_piat decimal(9),  
 	 b_max_piat decimal(9),  
 	 b_avg_piat decimal(9),  
@@ -294,7 +309,6 @@ UPDATE aggregate_dataset d2
 	SET d2.Link_ID = CONCAT(d2.src_ip, '-', d2.src_port, '-', d2.dst_ip, '-', d2.dst_port);
 
 ------------------------------------------------------------- Links -----------------------------------------------------------------------
-DROP TABLE IF EXISTS Links;
 
 create table Links (Link_ID varchar(60),
 	    			srcIP varchar(15),
@@ -307,10 +321,9 @@ create table Links (Link_ID varchar(60),
 INSERT INTO Links
 SELECT Link_ID, src_ip, src_port, dst_ip, dst_port 
 FROM aggregate_dataset
-GROUP BY Link_ID;
+GROUP BY Link_ID, src_ip, src_port, dst_ip, dst_port;
 
 ------------------------------------------------------------- Flows ----------------------------------------------------------------------
-DROP TABLE IF EXISTS Flows;
 
 CREATE TABLE Flows (Flow_index int,
 					Link_ID varchar(60),
@@ -326,7 +339,6 @@ SELECT Flow_index, Link_ID, flowStart, flowDuration, origin
 FROM aggregate_dataset;
 
 ------------------------------------------------------------- ForwardFlows -----------------------------------------------------------------------
-DROP TABLE IF EXISTS ForwardFlows;
 
 create table ForwardFlows(Flow_index int,
 						   f_pktTotalCount decimal(8),
@@ -349,7 +361,6 @@ SELECT Flow_index, f_pktTotalCount, f_octetTotalCount, f_min_ps, f_max_ps, f_avg
 FROM aggregate_dataset;
 
 ------------------------------------------------------------- BackwardFlows -----------------------------------------------------------------------
-DROP TABLE IF EXISTS BackwardFlows;
 
 create table BackwardFlows(Flow_index int,
 						   b_pktTotalCount decimal(8),
@@ -357,7 +368,7 @@ create table BackwardFlows(Flow_index int,
 						   b_min_ps decimal(5),
 						   b_max_ps decimal(5),
 						   b_avg_ps decimal(5),
-						   b_std_dev_ps decimal(4),
+						   b_std_dev_ps decimal(6),
 						   b_min_piat decimal(9), 
 						   b_max_piat decimal(9), 
 						   b_avg_piat decimal(9), 
@@ -372,7 +383,6 @@ SELECT Flow_index, b_pktTotalCount, b_octetTotalCount, b_min_ps, b_max_ps, b_avg
 FROM aggregate_dataset;
 
 ------------------------------------------------------------- Packets -----------------------------------------------------------------------
-DROP TABLE IF EXISTS Packets;
 
 CREATE TABLE Packets(Flow_index int,
 					 min_ps decimal(6),
@@ -393,7 +403,6 @@ FROM aggregate_dataset;
 
 
 ------------------------------------------------------------- Flags -----------------------------------------------------------------------
-DROP TABLE IF EXISTS Flags;
 
 create table Flags(Flow_index int,
 					FIN_Flag_Count decimal(1), 
@@ -414,7 +423,6 @@ FROM aggregate_dataset
 WHERE origin = '1'; -- only load dataset 1
 
 ------------------------------------------------------------- Protocol1 -----------------------------------------------------------------------
-DROP TABLE IF EXISTS Protocol1;
 
 CREATE TABLE Protocol1(Flow_index int,
 					 proto decimal(2),
@@ -431,7 +439,6 @@ WHERE origin = '1';
 
 
 ------------------------------------------------------------- Protocol2 -----------------------------------------------------------------------
-DROP TABLE IF EXISTS Protocol2;
 
 create table Protocol2(Flow_index int,
 					proto decimal(2),
@@ -449,7 +456,6 @@ WHERE origin = '2';
 
 
 ------------------------------------------------------------- USERS -----------------------------------------------------------------------
-DROP TABLE IF EXISTS userinfo;
 
 CREATE TABLE userinfo (userID varchar(100),
 					passwd char(64),
@@ -465,11 +471,10 @@ VALUES ('admin','ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94
 
 
 ------------------------------------------------------------- ANNOTATIONS -----------------------------------------------------------------------
-DROP TABLE IF EXISTS annotations;
 
-CREATE TABLE annotations (flowID INT,
-					userID CHAR(64),
-					comments VARCHAR(1000)
+CREATE TABLE annotations (Flow_index INT,
+					comments VARCHAR(1000),
+					FOREIGN KEY (Flow_index) REFERENCES Flows(Flow_index)
 					); 
 -- Figure out which PKs and FKs to use here, also add this to ER 
 

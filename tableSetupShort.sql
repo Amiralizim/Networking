@@ -1,3 +1,6 @@
+DROP DATABASE IF EXISTS Networking;
+CREATE DATABASE Networking;
+USE Networking;
 DROP VIEW IF EXISTS public_ips;
 DROP VIEW IF EXISTS private_ips;
 DROP TABLE IF EXISTS annotations;
@@ -172,7 +175,7 @@ create table Dataset2 (
 	 b_min_ps decimal(5),  
 	 b_max_ps decimal(5),  
 	 b_avg_ps decimal(5),  
-	 b_std_dev_ps decimal(5), 
+	 b_std_dev_ps decimal(6), 
 	 b_flowStart decimal(10), 
 	 b_flowEnd decimal(10), 
 	 b_flowDuration decimal(12),  
@@ -251,7 +254,7 @@ CREATE TABLE aggregate_dataset (
 	 b_min_ps decimal(5),  
 	 b_max_ps decimal(5),  
 	 b_avg_ps decimal(5),  
-	 b_std_dev_ps decimal(5), 
+	 b_std_dev_ps decimal(6), 
 	 b_min_piat decimal(9),  
 	 b_max_piat decimal(9),  
 	 b_avg_piat decimal(9),  
@@ -367,7 +370,7 @@ create table BackwardFlows(Flow_index int,
 						   b_min_ps decimal(5),
 						   b_max_ps decimal(5),
 						   b_avg_ps decimal(5),
-						   b_std_dev_ps decimal(4),
+						   b_std_dev_ps decimal(6),
 						   b_min_piat decimal(9), 
 						   b_max_piat decimal(9), 
 						   b_avg_piat decimal(9), 
@@ -472,8 +475,8 @@ VALUES ('admin','ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94
 ------------------------------------------------------------- ANNOTATIONS -----------------------------------------------------------------------
 
 CREATE TABLE annotations (Flow_index INT,
-					userID CHAR(64),
-					comments VARCHAR(1000)
+					comments VARCHAR(1000),
+					FOREIGN KEY (Flow_index) REFERENCES Flows(Flow_index)
 					); 
 -- Figure out which PKs and FKs to use here, also add this to ER 
 
