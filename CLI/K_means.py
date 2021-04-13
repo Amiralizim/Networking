@@ -6,6 +6,7 @@ from sklearn.cluster import KMeans
 import mysql.connector
 from mysql.connector import Error 
 from instances.login import Login
+from collections import Counter
 
 class K_means_cluster: 
     def __init__(self):
@@ -45,6 +46,7 @@ class K_means_cluster:
         kmeans = KMeans(n_clusters=cluster_num)
         y_kmeans5 = kmeans.fit_predict(x)
         print(y_kmeans5)
+        print(Counter(kmeans.labels_))
         kmeans.cluster_centers_
         plt.scatter(x[:, 0], x[:, 1], c=y_kmeans5, cmap='rainbow')
         plt.show()
