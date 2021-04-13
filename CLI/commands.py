@@ -191,18 +191,13 @@ def dst_port_selection(dstport):
 @click.command()
 @click.option("--annotation", prompt = "Please provide the annotation text")
 def annotate(annotation):
-    global current_user
     global current_flow_id
-    if login_instance.add_annotation(current_user, current_flow_id, annotation) == 1:
-        click.secho("Succesfully added: ", fg = 'green', nl=False)
-        click.secho(str(annotation), fg = 'green')
-        click.secho("For User: ", fg = 'green', nl=False)
-        click.secho(str(current_user), fg = 'green')
-        click.secho("For FlowID: ", fg = 'green', nl=False)
-        click.secho(str(current_flow_id), fg = 'green')
-        client_option(None)
+    annotation_result = update_instance.insert_annotations(current_flow_id, annotation)
+    if annotation_result[0] != -1:
+        click.secho('Succesfully added annotation', fg = 'green')
     else:
-        click.secho("Error adding annotation", fg = 'red')
+        click.secho('Unexpected error, please try again', fg = 'red')
+    main_menu()
 
 
 ''' Use this command to get the source details and destiantion details which can be used to generate our flow_id '''
@@ -232,6 +227,11 @@ def generate_flow_index(sourceip, destinationip, sourceport, destinationport):
 @click.option("--flow_index", prompt="Enter the Flow_index of a flow you wish to operate upon", help="Provide the Flow_index")
 def display_or_annotate(flow_index):
     global current_flow_id
+    record = flow_instance.client_display_annotations(flow_index)
+    if(record):
+        click.secho("Previous annotation found for the selected flow: ", nl=False)
+        for x in record:
+            click.secho(x[0], fg = 'magenta')
     choice = ""
     while (choice != "8"):
         click.secho("(1) check total packet information")
