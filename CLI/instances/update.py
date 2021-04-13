@@ -54,33 +54,7 @@ class Update:
         
         msg = 'Succesfully delted all data related to the flow {}'.format(flow_index)
         return Delete_Result(QUERY_OK, msg)
-        
-        #Once this query is wiped from all other tables , wipe from links
-        # For this we have to get the link_id from flows first as flows acts as bridge between links and flow_index
-        
-        # flows_query = 'SELECT Link_ID FROM Flows WHERE Flow_index = {};'.format(flow_index)
-        # try:
-        #     self.cursor.execute(flows_query)
-        # except mysql.connector.Error as err:
-        #     errmsg = ('Unexpected Error {}').format(err.msg)
-        #     return Delete_Result(QUERY_ERR, errmsg)
-        
-        # flow_query_result = self.cursor.fetchall()
-        # link_id = flows_query_result[0][0]
-        # #Now we can safely delete from Flows
-        # delete_result = self.delete_from_table('Flows',flow_index)
-        # if delete_result.QUERY_OK != QUERY_OK:
-        #     return Delete_Result(QUERY_ERR, errmsg)
-        
-        # #Finally we are good to wipe the link for good
-        # link_delete_query = 'DELETE FROM Links WHERE Link_ID = {};'.format(link_id)
-        # try:
-        #     self.cursor.execute(link_id)
-        # except mysql.connector.Error as err:
-        #     errmsg = ('Unexpected Error {}').format(err.msg)
-        #     return Delete_Result(QUERY_ERR, errmsg)
-        
-        # msg = 'Succesfully wiped flow_index {} from with database along '
+    
     
     def update_table(self, table_name, table_data):
         update_queries = self.get_update_queries(table_name, table_data)
@@ -161,31 +135,38 @@ class Update:
     
     def insert_new_flow(self, srcIP, srcPort, dstIP, dstPort):
         Link_ID = ('{}-{}-{}-{}').format(srcIP, srcPort, dstIP, dstPort)
-        #Step 1: Insert the Link into the Links table so the FK is satisfied
-        query = 'INSERT INTO Links (Link_ID, srcIP, srcPort, dstIP, dstPort) VALUES(\'{}\', \'{}\', \'{}\', \'{}\', \'{}\');'.format(Link_ID, srcIP, srcPort, dstIP, dstPort)
-        print(query)
+        #Step 1: check if the Link_ID exists , if it does leave it be, if it does not , add it to the links table
+        check_link_query = 'SELECT COUNT(*) FROM Links WHERE Link_ID = \'{}\';'.format(Link_ID)
+        try:
+            self.cursor.execute(check_link_query)
+        except mysql.connector.Error as err:
+            errmsg = ('Unexpected Error: {}').format(err.msg)
+            return (QUERY_ERR, errmsg)
+        count_result = self.cursor.fetchall()
+        if count_result[0][0] == 0:
+            #This link does not exist in our links table, add it first
+            insert_query = 'INSERT INTO Links (Link_ID, srcIP, srcPort, dstIP, dstPort) VALUES(\'{}\', \'{}\', \'{}\', \'{}\', \'{}\');'.format(Link_ID, srcIP, srcPort, dstIP, dstPort)
+            try:
+                self.cursor.execute(insert_query)
+            except mysql.connector.Error as err:
+                errmsg = ('Unexpected Error: {}').format(err.msg)
+                return (QUERY_ERR, errmsg)
+            self.connection.commit()
+        #Now get the max flow_index so we can iterate it further as this is the PK 
+        flow_index_query = 'SELECT MAX(Flow_index) FROM Flows;'
+        self.cursor.execute(flow_index_query)
+        flow_index_result = self.cursor.fetchall()
+        new_flow_index = int(flow_index_result[0][0])+1
+        # Insert just the flow_index and link_id into the flows table, date time can be added using update
+        query = 'INSERT INTO Flows(Flow_index,Link_ID,origin) VALUES ({},\'{}\',{})'.format(new_flow_index,Link_ID, CLIENT_ORIGIN)
         try:
             self.cursor.execute(query)
         except mysql.connector.Error as err:
-            if (err.errno == DUPLICATE_PRIMARY_KEY_ERRNO):
-                #TODO: MAKE SURE THE FLOW_INDEX IS RETURNED HERE
-                errmsg = 'Error: This link already exists, you can query the link and update its contents instead'
-                return (QUERY_ERR,errmsg)
-            else:
-                errmsg = ('Unexpected Error: {}').format(err.msg)
-                return (QUERY_ERR,errmsg)
+            errmsg = ('Unexpected error: {}').format(err.msg)
+            return (QUERY_ERR, errmsg)
         self.connection.commit()
-        #Step 2: Get the max Flow_index so we can iterate it further, as this is the PK
-        flow_index_query = 'SELECT MAX(Flow_index) FROM Flows'
-        self.cursor.execute(flow_index_query)
-        result = self.cursor.fetchall()
-        flow_index = int(result[0][0])+1
-        #Step 3: Insert just the Flow_index and the Link_ID into the flows table so now all a user has to do is update from the given flow index
-        query = 'INSERT INTO Flows(Flow_index,Link_ID,origin) VALUES ({},\'{}\',{})'.format(flow_index,Link_ID, CLIENT_ORIGIN)
-        self.cursor.execute(query)
-        self.connection.commit()
-        msg = ('Success, flow was added with Flow_index: {}').format(flow_index)
-        return (0, msg)
+        msg = ('Success, flow was added with Flow_index: {}').format(new_flow_index)
+        return (QUERY_OK, msg)
     
     def update_flow_timing_table(self, date_time_information):
         count_query = 'SELECT COUNT(*) FROM Flows WHERE Flow_index = {};'.format(date_time_information[0])
