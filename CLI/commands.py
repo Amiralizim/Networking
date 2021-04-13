@@ -8,7 +8,7 @@ from instances.update import *
 from tables import *
 
 '''Mantain this token to keep track is session is admin session or user session'''
-is_admin_session = 0
+#is_admin_session = 0
 current_user = None
 connection = None
 src_ip = ""
@@ -25,6 +25,7 @@ flow_instance = None
 protocol_instance = None
 update_instance = None
 tables = None
+is_admin_session = 0
 
 def instance_init():
     global connection
@@ -34,6 +35,7 @@ def instance_init():
     global protocol_instance
     global update_instance
     global tables
+    global is_admin_session
     login_instance = Login()
     connection = login_instance.initialize_db()
     link_instance = Link(connection)
@@ -41,6 +43,7 @@ def instance_init():
     protocol_instance = Protocol(connection)
     update_instance = Update(connection)
     tables = Tables()
+    is_admin_session = 0
 
 
 @click.command()
@@ -48,15 +51,39 @@ def instance_init():
 @click.option("--password", prompt = "Please enter your password", help = "Provide the password", hide_input = True)
 def login(username, password):
     global current_user
+    global is_admin_session
     instance_init()
     if login_instance.authenticate(username, password) == True:
         current_user = username
         click.secho("Succesfully logged in!", fg = 'green')
         is_admin_session = login_instance.get_session_token(username)
-        client_option(None)
+        main_menu()
     else:
         click.secho("ERROR: INCORRECT CREDENTIALS", fg = 'red')
         login(None, None)
+
+@click.command()
+def main_menu():
+    global is_admin_session
+    choice = ""
+    click.secho('Welcome to the CLI! Please choose one of the options as mentioned below', fg = 'cyan')
+    click.secho('(1) Query Data', fg = 'cyan')
+    click.secho('(2) Insert and Update Data', fg = 'cyan')
+    click.secho('(3) Delete Data', fg = 'cyan') 
+    click.secho('(4) Logout', fg = 'cyan')
+    choice = click.prompt('Enter one of the options displayed above (1/2/3/4)')
+    if choice == '1':
+        client_option(None)
+    elif choice == '2' and is_admin_session == 1:
+        update_menu()
+    elif choice == '3' and is_admin_session == 1:
+        delete_menu()
+    elif choice == '4':
+        is_admin_session = 0
+        login(None, None)
+    else:
+        click.secho('You must be an admin to use these features', fg = 'red')
+        main_menu()
 
 ''' Use this command to choose the client option '''
 @click.command()
