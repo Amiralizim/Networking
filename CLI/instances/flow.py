@@ -161,3 +161,13 @@ class Flow:
         results = self.cursor.fetchall()
         for x in results:
             click.secho(x[0], fg = 'magenta')
+    
+    def client_display_annotations(self, Flow_index):
+        record = []
+        try: 
+            query = 'SELECT comments FROM annotations WHERE Flow_index = {};'.format(Flow_index)
+            self.cursor.execute(query)
+        except Error:
+            return record
+        record = self.cursor.fetchall()
+        return record
