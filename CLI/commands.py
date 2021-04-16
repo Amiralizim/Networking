@@ -197,7 +197,7 @@ def annotate(annotation):
         click.secho('Succesfully added annotation', fg = 'green')
     else:
         click.secho('Unexpected error, please try again', fg = 'red')
-    main_menu()
+    return 
 
 
 ''' Use this command to get the source details and destiantion details which can be used to generate our flow_id '''
@@ -229,7 +229,7 @@ def display_or_annotate(flow_index):
     global current_flow_id
     record = flow_instance.client_display_annotations(flow_index)
     if(record):
-        click.secho("Previous annotation found for the selected flow: ", nl=False)
+        click.secho("Previous annotation found for the selected flow: ", fg='magenta')
         for x in record:
             click.secho(x[0], fg = 'magenta')
     choice = ""

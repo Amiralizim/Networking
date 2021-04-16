@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import Error
 import hashlib
+import os
 
 '''
 This class is specifically used for login related functionalities
@@ -10,11 +11,20 @@ class Login:
         self.connection = None
         self.cursor = None
 
+    def initialize_db(self):
+        db_connection = os.getenv('DB_CONNECTION')
+        print(db_connection)
+        self.connection = self.create_connection(db_connection, 'root', 'root')
+        
+        self.cursor = self.connection.cursor()
+        return self.connection
+    
     def create_connection(self, host_name, user_name, user_password):
+        port_number = os.getenv('DB_PORT')
         try:
             self.connection = mysql.connector.connect(
                 host=host_name,
-                port = '3307',
+                port = port_number,
                 user=user_name,
                 passwd=user_password,
                 database = 'Networking'
@@ -23,11 +33,6 @@ class Login:
         except Error as e:
             print("The error '{e}' occurred")
 
-        return self.connection
-
-    def initialize_db(self):
-        self.connection = self.create_connection('localhost', 'root', 'root')
-        self.cursor = self.connection.cursor()
         return self.connection
 
     def hash_password(self, password):

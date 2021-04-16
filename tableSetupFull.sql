@@ -473,12 +473,7 @@ VALUES ('admin','ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94
 ------------------------------------------------------------- ANNOTATIONS -----------------------------------------------------------------------
 
 CREATE TABLE annotations (Flow_index INT,
-<<<<<<< Updated upstream:tableSetupFull.sql
-					comments VARCHAR(1000),
-					FOREIGN KEY (Flow_index) REFERENCES Flows(Flow_index)
-=======
 					comments VARCHAR(1000)
->>>>>>> Stashed changes:tableSetup.sql
 					); 
 -- Figure out which PKs and FKs to use here, also add this to ER 
 

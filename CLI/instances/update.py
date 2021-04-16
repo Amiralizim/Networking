@@ -191,7 +191,6 @@ class Update:
     
     def insert_annotations(self, Flow_index, comments):
         insert_query = 'INSERT INTO annotations(Flow_index, comments) VALUES({}, \'{}\')'.format(Flow_index, comments)
-        print(insert_query)
         try:
             self.cursor.execute(insert_query)
         except mysql.connector.Error as err:

@@ -21,11 +21,14 @@ pip3 install matplotlib
 ## Setups:
 Before running our code, there are a few python and sql scripts that needs to be run in the following order:
 - **Make sure you are at the Networking_dataset directory** 
-- First move the `Networking_dataset/21-Network-Traffic/extract.py` to the `21-Network-Traffic` folder where the data csv is (basically put extract.py in the same folder as the data csv). Run `python3 extract.py` to change formatting of the data csv files.
+- First move the `Networking_dataset/21-Network-Traffic/extract.py` to the `21-Network-Traffic` folder where the data csv is (basically put extract.py in the same folder as the data csv). Run `python extract.py` to change formatting of the data csv files.
 - Start up your mysql database, and inside the mysql command line run `source tableSetupFull.sql` to set up your database.
 
 ## How to run our CLI
-To run our CLI, simply run `python3 CLI/main.py`. Then you will be required to enter your username and password.
+make sure to export the following evironmental variables:
+```export DB_CONNECTION=localhost```
+```export DB_PORT=3307```
+To run our CLI, simply run `python CLI/main.py`. Then you will be required to enter your username and password.
 
 ### login
 - For admin, enter username: **admin** and password: **password123**

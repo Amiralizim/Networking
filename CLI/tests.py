@@ -72,6 +72,7 @@ class TestClientRoute(unittest.TestCase):
     @mock.patch('commands.src_ip', "10.200.7.194")
     @mock.patch('commands.src_port', "32827")
     def test_dst_ip_selection(self, dst_port_selection_mocked):
+        commands.instance_init()
         runner = CliRunner()
         runner.invoke(
             commands.dst_ip_selection, '--dstip 179.1.4.230'.split(), input='1'
