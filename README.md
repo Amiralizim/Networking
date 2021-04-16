@@ -25,10 +25,15 @@ Before running our code, there are a few python and sql scripts that needs to be
 - Start up your mysql database, and inside the mysql command line run `source tableSetupFull.sql` to set up your database.
 
 ## How to run our CLI
-make sure to export the following evironmental variables in your environment before running the main.py:
-```export DB_CONNECTION=localhost```
-```export DB_PORT=3306```
-To run our CLI, simply run `python CLI/main.py`. Then you will be required to enter your username and password.
+- In order to correctly run the client, make sure ur setting matches with /Networking_dataset/CLI/instances/config.ini specifically the config file contais: 
+``` 
+host = <hostname> (default: localhost)
+port = <portnumber> (default: 3307)
+username = <username> (default: root)
+password = <password> (default: root)
+database_name = <database> (default: Networking)
+```
+- To run our CLI, simply run `python CLI/main.py`. Then you will be required to enter your username and password.
 
 ### login
 - For admin, enter username: **admin** and password: **password123**
