@@ -339,9 +339,6 @@ def display_or_annotate(flow_index):
 ''' This method is used to add minimal required data to flows and links so that the PKs and FKs can be satisfied '''
 @click.command()
 def insert_new_data():
-    #if (is_admin_session == 0):
-        #Non admin can not insert so return back to the client_option menu
-    #    client_option(None)
     srcIP = click.prompt('Enter the source IP')
     srcPort = click.prompt('Enter the source port')
     dstIP = click.prompt('Enter the destination IP')
@@ -356,7 +353,7 @@ def insert_new_data():
 
 @click.command()
 def update_menu():
-    instance_init()
+    #instance_init()
     choice = ""
     click.secho("(1) Update flow timing information", fg='yellow')
     click.secho("(2) Update flow forward packet information", fg='yellow')
@@ -385,7 +382,7 @@ def update_menu():
     elif (choice == '8'):
         delete_menu()
     elif (choice == '9'):
-        main_menu() #TODO: Replace this with a main menu
+        main_menu() 
     return
 
 @click.command()
@@ -402,10 +399,6 @@ def delete_menu():
     click.secho('(7) Go back to update menu', fg = 'yellow')
     click.secho('(8) Go back to main menu', fg = 'yellow')
     choice = click.prompt('Please choose one of the options (1/2/3/4/5/6/7/8)')
-
-    # if (choice != '8'):
-    #     flow_index = click.prompt('Please enter the flow_index you wish to delete the data for')
-    #     flow_instance.display_annotations(flow_index)
 
     if (choice == '1'):
         delete_result = update_instance.delete_from_table(tables.FORWARD_FLOWS, flow_index)
@@ -429,7 +422,7 @@ def delete_menu():
     else:
         click.secho(delete_result.msg, fg = 'green')
     
-    #update_menu()
+    update_menu()
 
 
 @click.command()

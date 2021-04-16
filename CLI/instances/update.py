@@ -35,7 +35,6 @@ class Update:
     
     def delete_from_table(self, table_name, Flow_id):
         delete_query = 'DELETE FROM {} WHERE Flow_index = {};'.format(table_name, Flow_id)
-        print(delete_query)
         try:
             self.cursor.execute(delete_query)
         except mysql.connector.Error as err:
@@ -52,38 +51,40 @@ class Update:
             if (delete_result.QUERY_OK != QUERY_OK):
                 return Delete_Result(QUERY_ERR, delete_result.msg)
         
-        msg = 'Succesfully delted all data related to the flow {}'.format(flow_index)
+        msg = 'Succesfully deleted all data related to the flow {}'.format(flow_index)
         return Delete_Result(QUERY_OK, msg)
     
     
     def update_table(self, table_name, table_data):
-        update_queries = self.get_update_queries(table_name, table_data)
-        count_query = update_queries.count_query
-        print(count_query)
-        self.cursor.execute(count_query)
-        count_result = self.cursor.fetchall()
         before_update = ""
         after_update = ""
         is_new_row = 0
+        count_query = 'SELECT COUNT(*) FROM Flows WHERE Flow_index = {};'.format(table_data[0])
+        self.cursor.execute(count_query)
+        result = self.cursor.fetchall()
+        if result[0][0] == 0:
+            errmsg = 'This flow does not exist in our system, Please insert the flow first'
+            return Update_Result(-1, errmsg, is_new_row, before_update, after_update)
+        update_queries = self.get_update_queries(table_name, table_data)
+        count_query = update_queries.count_query
+        self.cursor.execute(count_query)
+        count_result = self.cursor.fetchall()
         if count_result[0][0] == 0:
             is_new_row = 1
             main_query = update_queries.insert_query
-            print(main_query)
             msg = 'Succesfully inserted new row in the {} table with Flow_index = {}'.format(table_name, table_data[0])
         elif count_result[0][0] == 1:
             self.cursor.execute(update_queries.get_query)
             before_result = self.cursor.fetchall()
             before_update = before_result[0]
             main_query = update_queries.update_query
-            print(main_query)
             msg = 'Succesfully updated the row in the {} table with Flow_index = {}'.format(table_name, table_data[0])
         
         try:
             self.cursor.execute(main_query)
-        except mysqlconnector.Error as err:
+        except mysql.connector.Error as err:
             errmsg = ('Unexpected Error: {}').format(err.msg)
-            print(errmsg)
-            return Update_Result(-1, errmsg, is_new_row, before_updat, after_update)
+            return Update_Result(-1, errmsg, is_new_row, before_update, after_update)
         self.connection.commit()
         self.cursor.execute(update_queries.get_query)
         after_result = self.cursor.fetchall()
@@ -170,7 +171,6 @@ class Update:
     
     def update_flow_timing_table(self, date_time_information):
         count_query = 'SELECT COUNT(*) FROM Flows WHERE Flow_index = {};'.format(date_time_information[0])
-        print(count_query)
         self.cursor.execute(count_query)
         result = self.cursor.fetchall()
         if result[0][0] == 0:
