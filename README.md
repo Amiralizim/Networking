@@ -25,9 +25,9 @@ Before running our code, there are a few python and sql scripts that needs to be
 - Start up your mysql database, and inside the mysql command line run `source tableSetupFull.sql` to set up your database.
 
 ## How to run our CLI
-make sure to export the following evironmental variables:
+make sure to export the following evironmental variables in your environment before running the main.py:
 ```export DB_CONNECTION=localhost```
-```export DB_PORT=3307```
+```export DB_PORT=3306```
 To run our CLI, simply run `python CLI/main.py`. Then you will be required to enter your username and password.
 
 ### login
