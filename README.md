@@ -1,6 +1,9 @@
-# Networking_dataset
-ECE356 project
-ER relationship diagram: draw.io
+# ECE356 project:
+Defined relations for sampled networking data in a specific time and location and created a simple CLI interface to query the data
+
+## Diagrams:
+./Diagrams/ER.png for the entity relation diagram of the data.
+./Diagrams/Client_diagram.png for basic flow design of the client application
 ## Datasets:
 https://www.kaggle.com/jsrojas/ip-network-traffic-flows-labeled-with-87-apps
 https://www.kaggle.com/jsrojas/labeled-network-traffic-flows-114-applications
