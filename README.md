@@ -1,4 +1,4 @@
-# ECE356 project:
+# Database project:
 Defined relations for sampled networking data in a specific time and location and created a simple CLI interface to query the data.
 
 ## Diagrams:
