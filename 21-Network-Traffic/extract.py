@@ -11,7 +11,6 @@ def extract_columns(csvfile='Dataset-Unicauca-Version2-87Atts.csv'):
             list_of_column_names.append(row)
             break
         
-    print("List of column names: ", list_of_column_names)
     return list_of_column_names
 
 # find the maximum value in each row for sql types
@@ -41,3 +40,4 @@ csvfile = 'Dataset-Unicauca-Version2-87Atts.csv'
 # csvfile = 'Unicauca-dataset-April-June-2019-Network-flows.csv'
 # extract_columns(csvfile)
 format_column_names(csvfile)
+print("operation Completed!")

@@ -109,7 +109,7 @@ create table Dataset1 (
 	  L7Protocol decimal(3),
 	  ProtocolName varchar(20)
 );
-load data infile '/var/lib/mysql-files/21-Network-Traffic/Dataset-Unicauca-Version2-87Atts.csv' ignore into table Dataset1
+load data local infile '21-Network-Traffic/Dataset-Unicauca-Version2-87Atts.csv' ignore into table Dataset1
 		fields terminated by ','
 		enclosed by '"'
 		lines terminated by '\n'
@@ -188,7 +188,7 @@ create table Dataset2 (
 	 application_protocol varchar(6), 
 	 web_service varchar(20) 
 );
-load data infile '/var/lib/mysql-files/21-Network-Traffic/Unicauca-dataset-April-June-2019-Network-flows.csv' ignore into table Dataset2
+load data local infile '21-Network-Traffic/Unicauca-dataset-April-June-2019-Network-flows.csv' ignore into table Dataset2
 		fields terminated by ','
 		enclosed by '"'
 		lines terminated by '\n'
@@ -219,7 +219,7 @@ ALTER TABLE Dataset2
 UPDATE Dataset2 d2
 	SET d2.Flow_Duration = TIME_TO_SEC(timediff(FROM_UNIXTIME(d2.flowDuration), FROM_UNIXTIME(0)));
 
-------------------------------------------------------------- aggregate dataset -----------------------------------------------------------------------
+-- ----------------------------------------------------------- aggregate dataset -----------------------------------------------------------------------
 -- this table combines both datasets and produce a unqiue id: Flow_index 
 
 CREATE TABLE aggregate_dataset (
@@ -310,7 +310,7 @@ ALTER TABLE aggregate_dataset
 UPDATE aggregate_dataset d2
 	SET d2.Link_ID = CONCAT(d2.src_ip, '-', d2.src_port, '-', d2.dst_ip, '-', d2.dst_port);
 
-------------------------------------------------------------- Links -----------------------------------------------------------------------
+-- ----------------------------------------------------------- Links -----------------------------------------------------------------------
 
 create table Links (Link_ID varchar(60),
 	    			srcIP varchar(15),
@@ -325,7 +325,7 @@ SELECT Link_ID, src_ip, src_port, dst_ip, dst_port
 FROM aggregate_dataset
 GROUP BY Link_ID, src_ip, src_port, dst_ip, dst_port;
 
-------------------------------------------------------------- Flows ----------------------------------------------------------------------
+-- ----------------------------------------------------------- Flows ----------------------------------------------------------------------
 
 CREATE TABLE Flows (Flow_index int,
 					Link_ID varchar(60),
@@ -340,7 +340,7 @@ INSERT INTO Flows
 SELECT Flow_index, Link_ID, flowStart, flowDuration, origin
 FROM aggregate_dataset;
 
-------------------------------------------------------------- ForwardFlows -----------------------------------------------------------------------
+-- ----------------------------------------------------------- ForwardFlows -----------------------------------------------------------------------
 
 create table ForwardFlows(Flow_index int,
 						   f_pktTotalCount decimal(8),
@@ -362,7 +362,7 @@ SELECT Flow_index, f_pktTotalCount, f_octetTotalCount, f_min_ps, f_max_ps, f_avg
 													   f_min_piat, f_max_piat, f_avg_piat, f_std_dev_piat
 FROM aggregate_dataset;
 
-------------------------------------------------------------- BackwardFlows -----------------------------------------------------------------------
+-- ----------------------------------------------------------- BackwardFlows -----------------------------------------------------------------------
 
 create table BackwardFlows(Flow_index int,
 						   b_pktTotalCount decimal(8),
@@ -384,7 +384,74 @@ SELECT Flow_index, b_pktTotalCount, b_octetTotalCount, b_min_ps, b_max_ps, b_avg
 													   b_min_piat, b_max_piat, b_avg_piat, b_std_dev_piat
 FROM aggregate_dataset;
 
-------------------------------------------------------------- Packets -----------------------------------------------------------------------
+-- ----------------------------------------------------------------------------------------------- Links -----------------------------------------------------------------------
+
+create table Links (Link_ID varchar(60),
+	    			srcIP varchar(15),
+ 				    srcPort varchar(5),
+ 					dstIP varchar(15),
+ 					dstPort varchar(15),
+					PRIMARY KEY (Link_ID)
+);
+
+INSERT INTO Links
+SELECT Link_ID, src_ip, src_port, dst_ip, dst_port 
+FROM aggregate_dataset
+GROUP BY Link_ID, src_ip, src_port, dst_ip, dst_port;
+
+-- ----------------------------------------------------------- Flows ----------------------------------------------------------------------
+
+CREATE TABLE Flows (Flow_index int,
+					Link_ID varchar(60),
+					Flow_Start varchar(60),
+					Flow_Duration decimal(10),
+					origin varchar(1),
+					PRIMARY KEY (Flow_index),
+					FOREIGN KEY (Link_ID) REFERENCES Links(Link_ID)
+					);
+
+INSERT INTO Flows
+SELECT Flow_index, Link_ID, flowStart, flowDuration, origin
+FROM aggregate_dataset;
+
+-- ----------------------------------------------------------- ForwardFlows -----------------------------------------------------------------------
+
+create table ForwardFlows(Flow_index int,
+						   f_pktTotalCount decimal(8),
+						   f_octetTotalCount decimal(10),
+						   f_min_ps decimal(5),
+						   f_max_ps decimal(5),
+						   f_avg_ps decimal(5),
+						   f_std_dev_ps decimal(4),
+						   f_min_piat decimal(9), 
+						   f_max_piat decimal(9), 
+						   f_avg_piat decimal(9), 
+						   f_std_dev_piat decimal(8),
+						   PRIMARY KEY (Flow_index),
+						   FOREIGN KEY (Flow_index) REFERENCES Flows(Flow_index)
+						   );
+
+INSERT INTO ForwardFlows
+SELECT Flow_index, f_pktTotalCount, f_octetTotalCount, f_min_ps, f_max_ps, f_avg_ps, f_std_dev_ps,
+													   f_min_piat, f_max_piat, f_avg_piat, f_std_dev_piat
+FROM aggregate_dataset;
+
+-- ----------------------------------------------------------- BackwardFlows -----------------------------------------------------------------------
+
+create table BackwardFlows(Flow_index int,
+						   b_pktTotalCount decimal(8),
+						   b_octetTotalCount decimal(10),
+						   b_min_ps decimal(5),
+						   b_max_ps decimal(5),
+						   b_avg_ps decimal(5),
+						   b_std_dev_ps decimal(6),
+						   b_min_piat decimal(9), 
+						   b_max_piat decimal(9), 
+						   b_avg_piat decimal(9), 
+						   b_std_dev_piat decimal(8),
+						   PRIMARY KEY (Flow_index),
+						   PRIMARY KEY (Link_ID)
+-- ------------------------ Packets -----------------------------------------------------------------------
 
 CREATE TABLE Packets(Flow_index int,
 					 min_ps decimal(6),
@@ -404,7 +471,7 @@ SELECT Flow_index, min_ps, max_ps, avg_ps, std_dev_ps, min_piat, max_piat, avg_p
 FROM aggregate_dataset;
 
 
-------------------------------------------------------------- Flags -----------------------------------------------------------------------
+-- ----------------------------------------------------------- Flags -----------------------------------------------------------------------
 
 create table Flags(Flow_index int,
 					FIN_Flag_Count decimal(1), 
@@ -424,7 +491,7 @@ SELECT Flow_index, FIN_Flag_Count, SYN_Flag_Count, RST_Flag_Count, PSH_Flag_Coun
 FROM aggregate_dataset 
 WHERE origin = '1'; -- only load dataset 1
 
-------------------------------------------------------------- Protocol1 -----------------------------------------------------------------------
+-- ----------------------------------------------------------- Protocol1 -----------------------------------------------------------------------
 
 CREATE TABLE Protocol1(Flow_index int,
 					 proto decimal(2),
@@ -440,7 +507,7 @@ FROM aggregate_dataset
 WHERE origin = '1';
 
 
-------------------------------------------------------------- Protocol2 -----------------------------------------------------------------------
+-- ----------------------------------------------------------- Protocol2 -----------------------------------------------------------------------
 
 create table Protocol2(Flow_index int,
 					proto decimal(2),
@@ -457,7 +524,7 @@ FROM aggregate_dataset
 WHERE origin = '2'; 
 
 
-------------------------------------------------------------- USERS -----------------------------------------------------------------------
+-- ----------------------------------------------------------- USERS -----------------------------------------------------------------------
 
 CREATE TABLE userinfo (userID varchar(100),
 					passwd char(64),
@@ -472,7 +539,7 @@ VALUES ('admin','ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94
 ('user', 'c6ba91b90d922e159893f46c387e5dc1b3dc5c101a5a4522f03b987177a24a91', 0); 
 
 
-------------------------------------------------------------- ANNOTATIONS -----------------------------------------------------------------------
+-- ----------------------------------------------------------- ANNOTATIONS -----------------------------------------------------------------------
 
 CREATE TABLE annotations (Flow_index INT,
 					comments VARCHAR(1000),
@@ -480,7 +547,7 @@ CREATE TABLE annotations (Flow_index INT,
 					); 
 -- Figure out which PKs and FKs to use here, also add this to ER 
 
-------------------------------------------------------------- private_ips VIEW -----------------------------------------------------------------------
+-- ----------------------------------------------------------- private_ips VIEW -----------------------------------------------------------------------
 CREATE VIEW private_ips AS 
 SELECT srcIP, srcPort, dstIP, dstPort 
 FROM Links 
@@ -490,7 +557,7 @@ WHERE
 (CAST(SUBSTRING_INDEX(srcIP, ".", -4) AS int) = 172 AND 16 < CAST(SUBSTRING_INDEX(srcIP, ".", -3) AS int) < 31))
 GROUP BY srcIP, srcPort, dstIP, dstPort;
 
--------------------------------------------------------------  public_ips VIEW  -----------------------------------------------------------------------
+-- -----------------------------------------------------------  public_ips VIEW  -----------------------------------------------------------------------
 CREATE VIEW public_ips AS 
 SELECT srcIP, srcPort, dstIP, dstPort 
 FROM Links 

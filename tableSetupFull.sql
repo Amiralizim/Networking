@@ -109,7 +109,7 @@ create table Dataset1 (
 	  L7Protocol decimal(3),
 	  ProtocolName varchar(20)
 );
-load data infile '/var/lib/mysql-files/21-Network-Traffic/Dataset-Unicauca-Version2-87Atts.csv' ignore into table Dataset1
+load data local infile '/var/lib/mysql-files/21-Network-Traffic/Dataset-Unicauca-Version2-87Atts.csv' ignore into table Dataset1
 		fields terminated by ','
 		enclosed by '"'
 		lines terminated by '\n';
@@ -187,7 +187,7 @@ create table Dataset2 (
 	 application_protocol varchar(6), 
 	 web_service varchar(20) 
 );
-load data infile '/var/lib/mysql-files/21-Network-Traffic/Unicauca-dataset-April-June-2019-Network-flows.csv' ignore into table Dataset2
+load data local infile '/var/lib/mysql-files/21-Network-Traffic/Unicauca-dataset-April-June-2019-Network-flows.csv' ignore into table Dataset2
 		fields terminated by ','
 		enclosed by '"'
 		lines terminated by '\n';
