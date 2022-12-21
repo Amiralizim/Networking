@@ -2,7 +2,9 @@
 Defined relations for sampled networking data in a specific time and location and created a simple CLI interface to query the data.
 
 ## Diagrams:
+
 ```./Diagrams/ER.png``` for the entity relation diagram of the data.
+
 ```./Diagrams/Client_diagram.png``` for basic flow design of the client application
 
 
@@ -12,15 +14,17 @@ https://www.kaggle.com/jsrojas/labeled-network-traffic-flows-114-applications
 
 ## Setups:
 Before running our code, there are a few python and sql scripts that needs to be run in the following order:
+
 - **Make sure you are at the Networking_dataset directory** 
-- First move the `Networking_dataset/21-Network-Traffic/extract.py` to the `21-Network-Traffic` folder where the data csv is (basically put extract.py in the same folder as the data csv). Run `python extract.py` to change formatting of the data csv files.
-Make sure you have docker and docker-compose install on your computer. 
+- First move the two data sets found at the links above in `Networking_dataset/21-Network-Traffic/` directory to the 
+- Run `python extract.py` to change formatting of the data csv files.
+
 - If you have mysql install:
 
         mysql -uroot -proot
         source tableSetupShort.sql
 
-- With Ubuntu operating system you can use the docker-compose.yml file for your sql instance: 
+- With Ubuntu operating system you can use the docker-compose.yml file for your sql instance, make sure docker and docker-compose are installed on the computer: 
         
         Start the docker container: docker-compose up -d
         Run bash on the docker compose: docker-compose exec db bash
